@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY.trim()}`, // .trim() use korlam jate space thakle kete jay
+        "Authorization": `Bearer ${apiKey.trim()}`, // .trim() use korlam jate space thakle kete jay
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
