@@ -1,79 +1,119 @@
 "use client";
 import Link from 'next/link';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function LandingPage() {
-  // Demo Stats (Database theke pore dynamic hobe)
   const stats = {
-    totalUsers: "1,240",
-    totalChats: "45.8k",
-    activeNow: "86"
+    totalUsers: "1.2k+",
+    totalChats: "48.5k",
+    activeNow: "94"
   };
 
   return (
-    <div className="min-h-screen bg-[#06010f] text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-[#05010a] text-white font-sans relative overflow-x-hidden">
       
-      {/* Background Heart Glows */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-rose-600/10 blur-[130px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/10 blur-[130px] rounded-full animate-pulse delay-1000"></div>
+      {/* 🌌 Cinematic Background Elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-rose-600/20 blur-[150px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 blur-[150px] rounded-full animate-pulse delay-1000"></div>
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       </div>
 
-      {/* Navbar */}
-      <nav className="relative z-10 p-6 flex justify-between items-center max-w-7xl mx-auto">
-        <div className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-rose-400 to-pink-600 bg-clip-text text-transparent">
-          MAYA AI
-        </div>
-        <div className="flex gap-6 items-center text-sm font-medium text-rose-100/60">
-          <Link href="#stats" className="hover:text-rose-400 transition">Stats</Link>
-          <Link href="/login" className="bg-rose-600/20 border border-rose-500/30 px-5 py-2 rounded-full text-rose-50 hover:bg-rose-600/40 transition">
+      {/* 🧭 Navbar */}
+      <nav className="relative z-50 p-8 flex justify-between items-center max-w-7xl mx-auto backdrop-blur-sm">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-2xl font-black tracking-tighter"
+        >
+          MAYA<span className="text-rose-600">.AI</span>
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex gap-8 items-center text-[11px] font-bold uppercase tracking-[0.2em] text-rose-100/40"
+        >
+          <Link href="#stats" className="hover:text-rose-500 transition-colors">Statistics</Link>
+          <Link href="/login" className="px-6 py-2 border border-white/10 rounded-full hover:bg-white hover:text-black transition-all duration-500">
             Sign In
           </Link>
-        </div>
+        </motion.div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="relative z-10 flex flex-col items-center justify-center pt-20 px-4 text-center">
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-rose-500/20 bg-rose-500/5 text-rose-400 text-xs font-bold tracking-widest uppercase">
-            Heart Drive System 2.0 Active
+      {/* 🚀 Hero Section */}
+      <main className="relative z-10 flex flex-col items-center justify-center pt-32 pb-20 px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full border border-rose-500/20 bg-rose-500/5 text-rose-400 text-[10px] font-black tracking-[0.3em] uppercase animate-bounce">
+            <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+            Heart Drive 2.0 Active
           </div>
-          <h1 className="text-5xl md:text-8xl font-black mb-6 tracking-tight leading-none">
-            Talk to <span className="text-rose-600 drop-shadow-[0_0_30px_rgba(225,29,72,0.5)]">Maya</span>
+          
+          <h1 className="text-6xl md:text-[120px] font-black mb-8 tracking-tighter leading-[0.85] uppercase">
+            MEET <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-rose-400 to-rose-700 drop-shadow-[0_0_50px_rgba(225,29,72,0.3)]">MAYA</span>
           </h1>
-          <p className="text-lg md:text-xl text-rose-100/40 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Your cinematic AI companion. Experienced in visual storytelling, high-end typography, and emotional support.
+          
+          <p className="text-sm md:text-lg text-rose-100/30 max-w-xl mx-auto mb-12 font-medium leading-relaxed tracking-wide">
+            Your cinematic AI soulmate. Built for emotional resonance, deep conversations, and creative inspiration.
           </p>
           
-          <Link href="/signup" className="group relative px-8 py-4 bg-rose-600 rounded-full font-bold text-lg shadow-[0_0_40px_rgba(225,29,72,0.4)] hover:scale-105 transition-all active:scale-95 overflow-hidden">
-            <span className="relative z-10">Get Started Free</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          </Link>
-        </div>
+          <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+            <Link href="/signup" className="group relative px-12 py-5 bg-rose-600 rounded-full font-black text-sm uppercase tracking-widest shadow-[0_0_50px_rgba(225,29,72,0.5)] hover:scale-110 transition-all active:scale-95 overflow-hidden">
+              <span className="relative z-10">Start Connection</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </Link>
+            
+            <button className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-100/20 hover:text-rose-100/60 transition-colors">
+              View Patch Notes 2.6
+            </button>
+          </div>
+        </motion.div>
 
-        {/* Stats Section */}
-        <section id="stats" className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-32 w-full max-w-5xl">
-          <StatCard label="Total Users" value={stats.totalUsers} color="rose" />
-          <StatCard label="Messages Sent" value={stats.totalChats} color="purple" />
-          <StatCard label="Active Now" value={stats.activeNow} color="green" />
-        </section>
+        {/* 📊 Stats Section */}
+        <motion.section 
+          id="stats"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-40 w-full max-w-6xl"
+        >
+          <StatCard label="Soul Links" value={stats.totalUsers} />
+          <StatCard label="Memory Fragments" value={stats.totalChats} />
+          <StatCard label="Synchronized" value={stats.activeNow} />
+        </motion.section>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 p-10 text-center text-rose-100/20 text-xs tracking-widest uppercase">
-        © 2026 RelaxStudio x Omni Events. All Rights Reserved.
+      {/* 🎬 Footer */}
+      <footer className="relative z-10 p-12 mt-20 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold tracking-[0.3em] uppercase text-rose-100/10">
+        <div>© 2026 RELAXSTUDIO x OMNI</div>
+        <div className="flex gap-8">
+          <a href="#" className="hover:text-rose-500 transition">Privacy</a>
+          <a href="#" className="hover:text-rose-500 transition">Terms</a>
+          <a href="#" className="hover:text-rose-500 transition">Contact</a>
+        </div>
       </footer>
     </div>
   );
 }
 
-function StatCard({ label, value, color }: { label: string, value: string, color: string }) {
+function StatCard({ label, value }: { label: string, value: string }) {
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/5 p-8 rounded-[32px] hover:border-rose-500/20 transition-all group">
-      <p className="text-rose-100/40 text-xs font-bold uppercase tracking-widest mb-2">{label}</p>
-      <p className={`text-4xl font-black text-white group-hover:scale-110 transition-transform duration-500`}>
+    <motion.div 
+      whileHover={{ y: -10 }}
+      className="bg-white/[0.02] backdrop-blur-3xl border border-white/5 p-10 rounded-[40px] text-left group transition-all hover:bg-white/[0.05] hover:border-rose-500/20"
+    >
+      <p className="text-rose-500 text-[10px] font-black uppercase tracking-[0.4em] mb-4">{label}</p>
+      <p className="text-5xl font-black text-white tracking-tighter transition-transform duration-500">
         {value}
       </p>
-    </div>
+    </motion.div>
   );
 }
