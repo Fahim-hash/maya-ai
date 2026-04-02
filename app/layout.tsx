@@ -2,13 +2,12 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { auth, db } from '@/firebase'; // Path fixed
+import { auth, db } from '@/firebase'; 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Create Central Context dynamic context logic state
 export interface MayaAppData {
   statusText: string;
   naughtyLevel: number;
@@ -23,7 +22,14 @@ const AppDataContext = createContext<{
   user: User | null;
   loading: boolean;
   updateLocalAppData: (data: Partial<MayaAppData>) => void;
-}>({ appData: null, user: null, loading: true, updateLocalAppData: () => {} });
+  handleAIResponse: (data: Partial<MayaAppData>) => void; // Context-e missing chhilo
+}>({ 
+  appData: null, 
+  user: null, 
+  loading: true, 
+  updateLocalAppData: () => {}, 
+  handleAIResponse: () => {} 
+});
 
 export const useAppData = () => useContext(AppDataContext);
 
@@ -34,19 +40,33 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   // Sync with AI chat function logic
   const handleAIResponse = (data: Partial<MayaAppData>) => {
-    updateLocalAppData(data); // Immediate UI update dynamic UI call logic data
+    updateLocalAppData(data);
   };
 
+  // Fixed updateLocalAppData for TypeScript
   const updateLocalAppData = (data: Partial<MayaAppData>) => {
-    setAppData(prev => ({ ...prev, ...data }));
+    setAppData((prev) => {
+      // Jodi agey theke data na thake (null hoy), tahole default values merge hobe
+      if (!prev) {
+        return {
+          statusText: "Deeply Addicted",
+          naughtyLevel: 88,
+          userName: "Love Link Partner",
+          avatarUrl: "",
+          age: 0,
+          dob: "",
+          ...data
+        } as MayaAppData;
+      }
+      // Jodi data thake, tahole safely merge hobe
+      return { ...prev, ...data } as MayaAppData;
+    });
   };
 
-  // Auth and Data Fetch Logic
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Fetch extended user doc logic call Firestore fixed
         try {
           const docRef = doc(db, "userExtended", currentUser.uid);
           const docSnap = await getDoc(docRef);
@@ -54,12 +74,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           if (docSnap.exists()) {
             setAppData(docSnap.data() as MayaAppData);
           } else {
-            // New user, create empty extended doc logic db entry point fixed
             const newAppData: MayaAppData = {
               statusText: "Deeply Addicted",
               naughtyLevel: 88,
               userName: currentUser.displayName || "Love Link Partner",
-              avatarUrl: "", // Handle default avatar url logic entry point
+              avatarUrl: "", 
               age: 0,
               dob: "",
             };
