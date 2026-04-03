@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db } from '@/firebase'; 
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc } from 'firebase/firestore'; 
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore'; 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -27,14 +27,12 @@ export default function MayaChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // --- 1. Auth & Ban Guard (Real-time) ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
         router.push('/login');
       } else {
         setUser(currentUser);
-        
         const userDocRef = doc(db, "users", currentUser.uid);
         const unsubBan = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -45,20 +43,16 @@ export default function MayaChat() {
           }
           setAuthLoading(false);
         });
-
         return () => unsubBan();
       }
     });
     return () => unsubscribe();
   }, [router]);
 
-  // --- 2. Fetch Chat History ---
   useEffect(() => {
     if (!user) return;
-
     const chatRef = collection(db, "users", user.uid, "messages");
     const q = query(chatRef, orderBy("createdAt", "asc"));
-
     const unsubChat = onSnapshot(q, (snapshot) => {
       const fetchedMsgs = snapshot.docs.map(doc => {
         const data = doc.data();
@@ -70,14 +64,11 @@ export default function MayaChat() {
           replyToId: data.replyToId || null
         };
       }) as Message[];
-      
       setMessages(fetchedMsgs);
     });
-
     return () => unsubChat();
   }, [user]);
 
-  // Auto-scroll logic
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -99,6 +90,7 @@ export default function MayaChat() {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, reaction: m.reaction === emoji ? null : emoji } : m));
   };
 
+  // --- 🔥 CORE UPDATE LOGIC ---
   const sendMessage = async (manualText?: string) => {
     const textToSend = manualText || input;
     if (!textToSend.trim() || !user) return;
@@ -108,7 +100,6 @@ export default function MayaChat() {
     setLoading(true);
 
     try {
-      // 1. Local Firestore Save (User Message)
       await addDoc(collection(db, "users", user.uid, "messages"), {
         text: textToSend,
         role: 'user',
@@ -116,7 +107,6 @@ export default function MayaChat() {
         createdAt: serverTimestamp()
       });
 
-      // 2. Groq-er jonno message history clean kora + Token Saver (Last 6 messages only)
       const cleanHistory = messages.slice(-6).map(({ role, content }) => ({ role, content }));
 
       const res = await fetch('/api/chat', {
@@ -131,22 +121,47 @@ export default function MayaChat() {
       const data = await res.json();
       
       if (data.content) {
-        const parts = data.content.split(/[.?!]+/).filter((p: string) => p.trim().length > 0);
-        
-        for (let index = 0; index < parts.length; index++) {
-          const part = parts[index].trim();
-          await new Promise(resolve => setTimeout(resolve, 800));
+        let fullResponse = data.content;
 
-          // 3. Save Maya's Response
-          await addDoc(collection(db, "users", user.uid, "messages"), {
-            text: part,
-            role: 'assistant',
-            createdAt: serverTimestamp()
+        // 1. Extract JSON Data from ###DATA### block
+        if (fullResponse.includes("###DATA###")) {
+          const parts = fullResponse.split("###DATA###");
+          const textOnly = parts[0].trim(); // Chat message
+          const jsonData = JSON.parse(parts[1].trim()); // { statusText, naughtyLevel }
+
+          // 2. Dashboard Update (Live Sync)
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, {
+            mood: jsonData.statusText,
+            loveLevel: jsonData.naughtyLevel
           });
+
+          // 3. Process the text for multi-bubble chat
+          const textBubbles = textOnly.split(/[.?!]+/).filter((p: string) => p.trim().length > 0);
+          
+          for (let part of textBubbles) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            await addDoc(collection(db, "users", user.uid, "messages"), {
+              text: part.trim(),
+              role: 'assistant',
+              createdAt: serverTimestamp()
+            });
+          }
+        } else {
+          // Fallback if Maya forgets to send ###DATA###
+          const parts = fullResponse.split(/[.?!]+/).filter((p: string) => p.trim().length > 0);
+          for (let part of parts) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+            await addDoc(collection(db, "users", user.uid, "messages"), {
+              text: part.trim(),
+              role: 'assistant',
+              createdAt: serverTimestamp()
+            });
+          }
         }
       }
     } catch (e) { 
-      console.error("Error saving chat:", e);
+      console.error("Error syncing dashboard:", e);
     } finally {
       setLoading(false);
     }
@@ -213,8 +228,8 @@ export default function MayaChat() {
                         ? 'text-6xl py-2 drop-shadow-[0_10px_20px_rgba(225,29,72,0.3)]' 
                         : `px-4 py-3 rounded-[24px] text-[15px] shadow-2xl border ${
                             isUser 
-                            ? 'bg-gradient-to-br from-rose-600/90 to-pink-700/90 border-white/10 text-white rounded-br-none' 
-                            : 'bg-white/5 backdrop-blur-2xl border-white/10 text-rose-50 rounded-bl-none'
+                              ? 'bg-gradient-to-br from-rose-600/90 to-pink-700/90 border-white/10 text-white rounded-br-none' 
+                              : 'bg-white/5 backdrop-blur-2xl border-white/10 text-rose-50 rounded-bl-none'
                           }`
                     }`}
                   >
