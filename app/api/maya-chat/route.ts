@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
+const apiKey = process.env.GROQ_API_KEY;
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    const completion = await groq.chat.completions.create({
+    const completion = await apiKey.chat.completions.create({
       messages: [
         {
           role: "system",
