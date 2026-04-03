@@ -38,7 +38,7 @@ export default function MayaIdentity() {
       <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
         {/* Navigation */}
         <nav className="mb-20">
-          <Link href="/dashboard" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[4px] text-white/40 hover:text-rose-500 transition-all">
+          <Link href="/" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[4px] text-white/40 hover:text-rose-500 transition-all">
             <span className="group-hover:-translate-x-1 transition-transform">←</span> Return to Terminal
           </Link>
         </nav>
