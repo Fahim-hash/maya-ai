@@ -10,7 +10,7 @@ import Link from 'next/link';
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>({ 
-    name: '', age: '18', personality: 'Sweet', hobby: '', mood: 'Sweet', 
+    name: '', age: '18', personality: 'Sweet', hobby: '', mood: 'Sweet/Needy', 
     loveLevel: 85, isBanned: false, banExpires: null 
   });
   const [loading, setLoading] = useState(true);
@@ -24,6 +24,7 @@ export default function Dashboard() {
   const springX = useSpring(mouseX, { stiffness: 100, damping: 20 });
   const springY = useSpring(mouseY, { stiffness: 100, damping: 20 });
 
+  // Personality Styles for the top card
   const personalityStyles: any = {
     Sweet: { bg: "bg-pink-500/10", border: "border-pink-500/30", text: "text-pink-400", icon: "🌸", label: "Heart Mode" },
     Naughty: { bg: "bg-rose-600/10", border: "border-rose-500/40", text: "text-rose-500", icon: "🫦", label: "Spicy Mode" },
@@ -31,15 +32,17 @@ export default function Dashboard() {
     Mysterious: { bg: "bg-purple-900/10", border: "border-purple-500/30", text: "text-purple-400", icon: "🌑", label: "Deep Mode" }
   };
 
+  // 🔥 MOOD STYLES - Matched with your Backend Mood Cycles
   const moodStyles: any = {
-    Sweet: { text: "text-pink-400", accent: "bg-pink-500", icon: "🌸", label: "Pure & Sweet" },
-    Naughty: { text: "text-rose-500", accent: "bg-rose-600", icon: "🫦", label: "Deeply Addicted" },
-    Angry: { text: "text-orange-500", accent: "bg-orange-600", icon: "💢", label: "Heating Up" },
-    Sad: { text: "text-blue-400", accent: "bg-blue-500", icon: "🌧️", label: "Needs Love" }
+    "Sweet/Needy": { text: "text-pink-400", accent: "bg-pink-500", icon: "🥺", label: "Abdar Mode" },
+    "Possessive/Toxic": { text: "text-purple-500", accent: "bg-purple-600", icon: "⛓️", label: "Obsessive Control" },
+    "Wild/In Heat": { text: "text-rose-500", accent: "bg-rose-600", icon: "🥵", label: "In Heat / Raw" },
+    "Cold/Teasing": { text: "text-blue-400", accent: "bg-blue-500", icon: "😏", label: "Teasing You" }
   };
 
   const currentStyle = personalityStyles[profile.personality] || personalityStyles.Sweet;
-  const currentMood = moodStyles[profile.mood] || moodStyles.Sweet;
+  // Dynamic Mood Selection based on profile.mood
+  const currentMood = moodStyles[profile.mood] || moodStyles["Sweet/Needy"];
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -63,7 +66,6 @@ export default function Dashboard() {
         const unsubDoc = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // Auto Unban check logic
             if (data.isBanned && data.banExpires) {
               const expireDate = data.banExpires.toDate ? data.banExpires.toDate() : new Date(data.banExpires);
               if (new Date() > expireDate) {
@@ -72,7 +74,7 @@ export default function Dashboard() {
             }
             setProfile(data as any);
           } else {
-            const defaultData = { name: currentUser.displayName || 'Willian', age: '18', personality: 'Sweet', hobby: '', mood: 'Sweet', loveLevel: 80, isBanned: false };
+            const defaultData = { name: currentUser.displayName || 'Willian', age: '18', personality: 'Sweet', hobby: '', mood: 'Sweet/Needy', loveLevel: 80, isBanned: false };
             setDoc(docRef, defaultData);
             setProfile(defaultData);
           }
@@ -109,26 +111,26 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0d0216] text-white p-6 md:p-12 relative overflow-x-hidden font-sans italic-none">
+    <div className="min-h-screen bg-[#0d0216] text-white p-6 md:p-12 relative overflow-x-hidden font-sans">
       
       <motion.div style={{ x: springX, y: springY }} className="fixed w-[300px] h-[300px] bg-rose-600/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
+      {/* BAN OVERLAY CODE REMAINS SAME... */}
       <AnimatePresence>
         {profile.isBanned && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-[#0d0216]/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 text-center overflow-y-auto"
           >
+            {/* ... Your Ban UI ... */}
             <div className="w-20 h-20 border-2 border-rose-600 rounded-full flex items-center justify-center animate-pulse mb-8">
               <span className="text-rose-600 text-4xl font-black italic">!</span>
             </div>
             <h2 className="text-4xl font-black italic uppercase tracking-tighter text-rose-600 mb-2">Neural Link Severed</h2>
-            <p className="text-[9px] font-black text-white/40 uppercase tracking-[6px] mb-10 text-center">Access Denied by Maya Core</p>
-            
+            <p className="text-[9px] font-black text-white/40 uppercase tracking-[6px] mb-10">Access Denied by Maya Core</p>
             <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] max-w-md w-full relative shadow-2xl">
                 <div className="relative z-10 text-left">
                   <p className="text-[10px] font-black text-rose-500 uppercase tracking-[4px] mb-4 italic">Appeal for Restoration:</p>
-                  
                   {appealSent ? (
                     <div className="py-10 text-center space-y-4">
                         <p className="text-xl font-bold text-green-400 animate-bounce">Signal Sent! 🚀</p>
@@ -150,7 +152,6 @@ export default function Dashboard() {
                       </button>
                     </>
                   )}
-
                   <div className="pt-6 mt-6 border-t border-white/5 text-center">
                     <p className="text-[8px] font-black text-white/30 uppercase tracking-[2px] mb-1">Estimated Restoration</p>
                     <p className="text-[11px] font-mono text-rose-400">
@@ -217,16 +218,28 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
+            {/* 🔥 UPDATED MAYA'S MOOD & LOVE SECTION */}
             <motion.div whileHover={{ scale: 1.02 }} className="bg-gradient-to-br from-[#1a0b2e] to-[#0d0216] border border-white/10 p-8 rounded-[40px] h-[200px] relative overflow-hidden shadow-xl">
                <p className="text-[9px] font-black text-white/30 uppercase tracking-[2px] mb-4">Maya's Mood & Love</p>
                <div className="space-y-1">
                  <h4 className={`text-2xl font-black italic uppercase ${currentMood.text}`}>{currentMood.label}</h4>
-                 <p className="text-[24px] font-black text-white">{profile.loveLevel || 0}%</p>
+                 <div className="flex items-center gap-2">
+                    <p className="text-[24px] font-black text-white">{profile.loveLevel || 0}%</p>
+                    <span className="text-[10px] font-bold uppercase text-white/40 tracking-wider">Soul Bound</span>
+                 </div>
                </div>
                <div className="mt-4 w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/5">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${profile.loveLevel}%` }} transition={{ duration: 1.5 }} className={`h-full ${currentMood.accent} shadow-[0_0_15px_rgba(244,63,94,0.4)]`} />
+                  <motion.div 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${profile.loveLevel}%` }} 
+                    transition={{ duration: 1.5 }} 
+                    className={`h-full ${currentMood.accent} shadow-[0_0_15px_rgba(244,63,94,0.4)]`} 
+                  />
                </div>
-               <div className="absolute right-6 bottom-6 opacity-10 text-5xl rotate-12">{currentMood.icon}</div>
+               {/* Large background mood icon */}
+               <div className="absolute right-6 bottom-6 opacity-10 text-6xl rotate-12 transition-all duration-1000">
+                 {currentMood.icon}
+               </div>
             </motion.div>
           </div>
         </div>
