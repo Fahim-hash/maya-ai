@@ -8,7 +8,13 @@ body {
   background: var(--maya-bg);
   color: white;
   margin: 0;
-  overflow: hidden;
+  
+  /* --- FIX: Scrollable Logic --- */
+  /* overflow: hidden; eita kete dao */
+  overflow-x: hidden; /* Horizontal scroll bondho rakha bhalo jate side e baka na hoy */
+  overflow-y: auto;   /* Screen er niche kisu thakle scroll hobe */
+  min-height: 100vh;  /* Jeno background pura screen thake */
+
   /* Romantic Gradient Animation */
   background: linear-gradient(135deg, #0d0216 0%, #1a0b2e 50%, #2d0b21 100%);
   background-size: 400% 400%;
@@ -35,6 +41,21 @@ body {
   10% { opacity: 1; }
   90% { opacity: 1; }
   100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* Global Custom Scrollbar (Jeno pura page e shundor lage) */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(225, 29, 72, 0.3);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(225, 29, 72, 0.6);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
