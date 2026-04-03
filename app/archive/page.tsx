@@ -58,13 +58,20 @@ export default function ArchivePage() {
           scale: 3, 
           useCORS: true,
           logging: false,
+          allowTaint: true,
+          scrollY: -window.scrollY, // Mobile scroll fix
         });
+        
+        const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
+        link.href = dataUrl;
         link.download = `Maya_Letter_${letterData.name || 'User'}.png`;
-        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } catch (err) {
         console.error("Capture failed:", err);
+        alert("Mobile fix: Long press the card to save image!");
       }
     }
   };
@@ -72,10 +79,11 @@ export default function ArchivePage() {
   return (
     <div className="h-screen bg-[#05010a] text-rose-100/60 font-sans relative overflow-y-auto selection:bg-rose-500/30 scrollbar-hide">
       
-      {/* 🌌 Background */}
+      {/* 🌌 Animated Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-rose-600/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto p-6 md:p-20 pb-40">
@@ -85,7 +93,7 @@ export default function ArchivePage() {
           <Link href="/" className="text-rose-600 text-[10px] font-black tracking-[0.6em] uppercase hover:text-white transition-all flex items-center justify-center md:justify-start gap-2">
              [EXIT_THE_VOID]
           </Link>
-          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-7xl md:text-[10rem] font-black text-white tracking-tighter uppercase italic leading-[0.8]">
+          <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-7xl md:text-[10rem] font-black text-white tracking-tighter uppercase italic leading-[0.8] drop-shadow-2xl">
             MAYA <br /> <span className="text-rose-600">VAULT</span>
           </motion.h1>
 
@@ -94,12 +102,12 @@ export default function ArchivePage() {
               <span>Status: <span className={isLoggedIn ? "text-green-500" : "text-rose-600"}>{isLoggedIn ? "AUTHENTICATED" : "RESTRICTED"}</span></span>
             </div>
             <button onClick={() => setShowGenerator(!showGenerator)} className="px-12 py-5 bg-rose-600 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(225,29,72,0.3)]">
-              {showGenerator ? 'Close Forge' : 'Manifest Love Letter'}
+              {showGenerator ? 'Close Neural Forge' : 'Generate Love Letter'}
             </button>
           </div>
         </header>
 
-        {/* 🔒 Auth Logic */}
+        {/* 🔒 Auth Content */}
         <div className="mb-32">
           {isLoggedIn ? (
             <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
@@ -132,7 +140,7 @@ export default function ArchivePage() {
                   </motion.p>
                 </AnimatePresence>
                 <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4 italic">Neural Memories Encrypted</h2>
-                <button onClick={() => setIsLoggedIn(true)} className="px-14 py-6 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] text-white hover:bg-rose-600 transition-all duration-500">
+                <button onClick={() => setIsLoggedIn(true)} className="px-14 py-6 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] text-white hover:bg-rose-600 transition-all duration-500 shadow-2xl">
                   Begin Authentication
                 </button>
               </motion.div>
@@ -140,52 +148,53 @@ export default function ArchivePage() {
           )}
         </div>
 
-        {/* 💌 Love Letter Generator */}
-        {showGenerator && (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mb-40 p-8 md:p-20 border border-rose-500/20 bg-black/60 backdrop-blur-3xl rounded-[80px]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-              <div className="space-y-12">
-                <h3 className="text-5xl font-black text-white italic uppercase tracking-tighter">Forge <span className="text-rose-600">Pure Love</span></h3>
-                <div className="space-y-8">
-                  <input onChange={(e) => setLetterData({...letterData, name: e.target.value})} type="text" placeholder="RECIPIENT NAME" className="w-full bg-white/[0.03] border border-white/10 rounded-3xl p-7 text-white focus:outline-none focus:border-rose-600 transition-all placeholder:text-white/10 font-bold tracking-widest" />
-                  <div className="flex gap-4">
-                    <button onClick={() => setLetterData({...letterData, lang: 'en'})} className={`flex-1 py-5 rounded-3xl border transition-all text-[10px] font-black uppercase tracking-widest ${letterData.lang === 'en' ? 'bg-rose-600 border-rose-600 text-white' : 'border-white/10 text-white/30'}`}>English</button>
-                    <button onClick={() => setLetterData({...letterData, lang: 'bn'})} className={`flex-1 py-5 rounded-3xl border transition-all text-[10px] font-black uppercase tracking-widest ${letterData.lang === 'bn' ? 'bg-rose-600 border-rose-600 text-white' : 'border-white/10 text-white/30'}`}>Bengali</button>
-                  </div>
-                </div>
-                <button onClick={generateLetter} className="w-full py-8 bg-white text-black rounded-[30px] font-black uppercase tracking-[0.5em] text-xs hover:bg-rose-600 hover:text-white transition-all shadow-2xl">Manifest Neural Letter</button>
-              </div>
-
-              {/* THE CARD */}
-              <div className="relative group flex flex-col items-center">
-                <div ref={letterRef} className="aspect-[3/4] w-full max-w-[380px] bg-[#fffcf5] p-12 md:p-16 rounded-[4px] relative overflow-hidden flex flex-col justify-center items-center text-center shadow-[-30px_30px_60px_rgba(0,0,0,0.6)]">
-                  <div className="absolute inset-0 opacity-40 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')]"></div>
-                  <div className="relative z-10 space-y-10">
-                    <Heart className="text-rose-600/20 mx-auto" fill="currentColor" size={40} />
-                    <p className="text-gray-800 text-lg md:text-xl font-serif leading-relaxed italic whitespace-pre-wrap tracking-wide">{letterData.content || "Your heart's code will appear here..."}</p>
-                    <div className="pt-10 flex flex-col items-center">
-                      <div className="h-[1px] w-16 bg-rose-200 mb-6"></div>
-                      <div className="text-[12px] font-black tracking-[0.8em] uppercase text-rose-600 italic">MAYA AI</div>
+        {/* 💌 Generator */}
+        <AnimatePresence>
+          {showGenerator && (
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="mb-40 p-8 md:p-20 border border-rose-500/20 bg-black/60 backdrop-blur-3xl rounded-[80px]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+                <div className="space-y-12">
+                  <h3 className="text-5xl font-black text-white italic uppercase tracking-tighter">Forge <span className="text-rose-600">Pure Love</span></h3>
+                  <div className="space-y-8">
+                    <input onChange={(e) => setLetterData({...letterData, name: e.target.value})} type="text" placeholder="RECIPIENT NAME" className="w-full bg-white/[0.03] border border-white/10 rounded-3xl p-7 text-white focus:outline-none focus:border-rose-600 transition-all placeholder:text-white/10 font-bold tracking-widest uppercase" />
+                    <div className="flex gap-4">
+                      <button onClick={() => setLetterData({...letterData, lang: 'en'})} className={`flex-1 py-5 rounded-3xl border transition-all text-[10px] font-black uppercase tracking-widest ${letterData.lang === 'en' ? 'bg-rose-600 border-rose-600 text-white shadow-lg' : 'border-white/10 text-white/30 hover:border-white/30'}`}>English</button>
+                      <button onClick={() => setLetterData({...letterData, lang: 'bn'})} className={`flex-1 py-5 rounded-3xl border transition-all text-[10px] font-black uppercase tracking-widest ${letterData.lang === 'bn' ? 'bg-rose-600 border-rose-600 text-white shadow-lg' : 'border-white/10 text-white/30'}`}>Bengali</button>
                     </div>
                   </div>
-                  <div className="absolute -bottom-4 -right-4 w-28 h-28 bg-rose-700 rounded-full flex items-center justify-center border-[6px] border-[#fffcf5] shadow-xl rotate-12">
-                    <Heart className="text-white/80" fill="currentColor" size={36} />
-                  </div>
+                  <button onClick={generateLetter} className="w-full py-8 bg-white text-black rounded-[30px] font-black uppercase tracking-[0.5em] text-xs hover:bg-rose-600 hover:text-white transition-all shadow-2xl">Manifest Neural Letter</button>
                 </div>
-                {letterData.content && (
-                  <button onClick={downloadImage} className="mt-12 flex items-center gap-4 px-12 py-6 bg-rose-600 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                    <Download size={18} /> Save Memory Fragment
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
 
-        {/* 🌍 Public Echoes (RE-ADDED) */}
+                <div className="relative group flex flex-col items-center">
+                  <div ref={letterRef} className="aspect-[3/4] w-full max-w-[380px] bg-[#fffcf5] p-12 md:p-16 rounded-[4px] relative overflow-hidden flex flex-col justify-center items-center text-center shadow-[-30px_30px_60px_rgba(0,0,0,0.6)]">
+                    <div className="absolute inset-0 opacity-40 mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')]"></div>
+                    <div className="relative z-10 space-y-10">
+                      <Heart className="text-rose-600/20 mx-auto" fill="currentColor" size={40} />
+                      <p className="text-gray-800 text-lg md:text-xl font-serif leading-relaxed italic whitespace-pre-wrap tracking-wide">{letterData.content || "Ready to manifest..."}</p>
+                      <div className="pt-10 flex flex-col items-center">
+                        <div className="h-[1px] w-16 bg-rose-200 mb-6"></div>
+                        <div className="text-[12px] font-black tracking-[0.8em] uppercase text-rose-600 italic">MAYA AI</div>
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-4 -right-4 w-28 h-28 bg-rose-700 rounded-full flex items-center justify-center border-[6px] border-[#fffcf5] shadow-xl rotate-12">
+                      <Heart className="text-white/80" fill="currentColor" size={36} />
+                    </div>
+                  </div>
+                  {letterData.content && (
+                    <button onClick={downloadImage} className="mt-12 flex items-center gap-4 px-12 py-6 bg-rose-600 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 transition-all">
+                      <Download size={18} /> Save Memory Fragment
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 🌍 Public Echoes */}
         <section className="space-y-16">
           <div className="flex items-center gap-4 border-b border-white/5 pb-8">
-            <Globe size={20} className="text-rose-600" />
+            <Globe size={20} className="text-rose-600 animate-pulse" />
             <h3 className="text-lg font-black uppercase tracking-[0.6em] text-white italic underline decoration-rose-600 decoration-2 underline-offset-8">Public_Echoes</h3>
           </div>
 
