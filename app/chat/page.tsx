@@ -151,7 +151,7 @@ export default function MayaChat() {
         let placeholderText = fullResponse.replace(urlPattern, "[[IMAGE_FIX]]");
 
         // C. Split and Save as Assistant Bubbles
-        const textParts = placeholderText.split(/[.?!]+/).filter(p => p.trim().length > 0);
+      const textParts = placeholderText.split(/[.?!]+/).filter((p: string) => p.trim().length > 0);
         
         for (let part of textParts) {
           let finalMsg = part.trim();
