@@ -31,6 +31,7 @@ export default function Dashboard() {
     Mysterious: { bg: "bg-purple-900/10", border: "border-purple-500/30", text: "text-purple-400", icon: "🌑", label: "Deep Mode" }
   };
 
+  // 🔥 Mood Styles for Dynamic Updates
   const moodStyles: any = {
     Sweet: { text: "text-pink-400", accent: "bg-pink-500", icon: "🌸", label: "Pure & Sweet" },
     Naughty: { text: "text-rose-500", accent: "bg-rose-600", icon: "🫦", label: "Deeply Addicted" },
@@ -39,7 +40,14 @@ export default function Dashboard() {
   };
 
   const currentStyle = personalityStyles[profile.personality] || personalityStyles.Sweet;
-  const currentMood = moodStyles[profile.mood] || moodStyles.Sweet;
+  
+  // ⚡ Maya-r statusText er sathe dashboard match koranor logic
+  const currentMood = moodStyles[profile.mood] || { 
+    text: "text-rose-400", 
+    accent: "bg-rose-500", 
+    icon: "✨", 
+    label: profile.mood // Jodi Maya notun kisu pathay oita eikhane dekhabe
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -60,10 +68,11 @@ export default function Dashboard() {
         else setGreeting('Good Evening');
 
         const docRef = doc(db, "users", currentUser.uid);
+        
+        // 🔥 Real-time Snapshot Listener (Maya chat korle auto update hobe)
         const unsubDoc = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // Auto Unban check logic
             if (data.isBanned && data.banExpires) {
               const expireDate = data.banExpires.toDate ? data.banExpires.toDate() : new Date(data.banExpires);
               if (new Date() > expireDate) {
@@ -72,7 +81,7 @@ export default function Dashboard() {
             }
             setProfile(data as any);
           } else {
-            const defaultData = { name: currentUser.displayName || 'Willian', age: '18', personality: 'Sweet', hobby: '', mood: 'Sweet', loveLevel: 80, isBanned: false };
+            const defaultData = { name: currentUser.displayName || 'Willian', age: '18', personality: 'Sweet', mood: 'Sweet', loveLevel: 80, isBanned: false };
             setDoc(docRef, defaultData);
             setProfile(defaultData);
           }
@@ -217,14 +226,21 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
+            {/* 🔥 DYNAMIC MOOD CARD */}
             <motion.div whileHover={{ scale: 1.02 }} className="bg-gradient-to-br from-[#1a0b2e] to-[#0d0216] border border-white/10 p-8 rounded-[40px] h-[200px] relative overflow-hidden shadow-xl">
                <p className="text-[9px] font-black text-white/30 uppercase tracking-[2px] mb-4">Maya's Mood & Love</p>
                <div className="space-y-1">
+                 {/* Maya-r mood text dynamic dekhabe */}
                  <h4 className={`text-2xl font-black italic uppercase ${currentMood.text}`}>{currentMood.label}</h4>
                  <p className="text-[24px] font-black text-white">{profile.loveLevel || 0}%</p>
                </div>
                <div className="mt-4 w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/5">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${profile.loveLevel}%` }} transition={{ duration: 1.5 }} className={`h-full ${currentMood.accent} shadow-[0_0_15px_rgba(244,63,94,0.4)]`} />
+                  <motion.div 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${profile.loveLevel}%` }} 
+                    transition={{ duration: 1.5, ease: "easeOut" }} 
+                    className={`h-full ${currentMood.accent} shadow-[0_0_15px_rgba(244,63,94,0.4)]`} 
+                  />
                </div>
                <div className="absolute right-6 bottom-6 opacity-10 text-5xl rotate-12">{currentMood.icon}</div>
             </motion.div>
