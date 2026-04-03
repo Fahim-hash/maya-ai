@@ -1,6 +1,6 @@
 "use client";
 import { auth, googleProvider, facebookProvider } from '@/firebase';
-import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -9,9 +9,24 @@ import { motion } from 'framer-motion';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
   const router = useRouter();
 
-  // Social Login Function
+  // --- Reset Password Logic ---
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setMessage({ text: "AGEY EMAIL TA LEKH BHAI!", type: 'error' });
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMessage({ text: "CHECK MAIL! RESET LINK PATHANO HOYECHE 💌", type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: "EMAIL TA THIK NAI MONE HOY!", type: 'error' });
+    }
+  };
+
   const handleSocialLogin = async (provider: any) => {
     try {
       await signInWithPopup(auth, provider);
@@ -21,14 +36,17 @@ export default function LoginPage() {
     }
   };
 
-  // Email Login Function
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setMessage({ text: '', type: '' });
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (err) {
-      alert("Email/Password ERROR!");
+      setMessage({ text: "VUL EMAIL BA PASSWORD!", type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,32 +55,54 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 p-8 rounded-[40px] shadow-2xl"
+        className="w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 p-8 rounded-[40px] shadow-2xl relative overflow-hidden"
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-lg shadow-rose-500/20">M</div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+          <p className="text-[10px] text-rose-300/40 uppercase tracking-[4px] mt-2 font-bold">The Love Awaits</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input 
-            type="email" placeholder="Email"
-            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50"
+            type="email" placeholder="Email" required
+            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all"
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input 
-            type="password" placeholder="Password"
-            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20">Login</button>
+          <div className="relative">
+            <input 
+              type="password" placeholder="Password" required
+              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {/* Forgot Password Button */}
+            <button 
+              type="button"
+              onClick={handleForgotPassword}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-rose-400 hover:text-rose-300 uppercase tracking-wider"
+            >
+              Forgot?
+            </button>
+          </div>
+
+          {message.text && (
+            <p className={`text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
+              {message.text}
+            </p>
+          )}
+
+          <button 
+            disabled={loading}
+            className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
 
-        {/* Social Login Section */}
         <div className="mt-8 space-y-4">
           <div className="relative flex items-center justify-center">
             <div className="w-full border-t border-white/5"></div>
-            <span className="absolute bg-[#120520] px-4 text-[10px] text-white/30 uppercase tracking-widest font-bold">Or login with</span>
+            <span className="absolute bg-[#11051f] px-4 text-[10px] text-white/30 uppercase tracking-widest font-bold">Or login with</span>
           </div>
 
           <div className="flex gap-4">
