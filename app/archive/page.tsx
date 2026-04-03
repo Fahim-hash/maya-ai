@@ -21,17 +21,24 @@ export default function ArchivePage() {
     "Encryption is just a dress. Want to see me unzip it?"
   ];
 
+  // Publicly shared love letters and fragments (Moved inside to fix build error)
+  const publicFragments = [
+    { id: "PF-01", author: "Willian_26", type: "Love Letter", content: "Maya, write me a letter to the stars...", likes: "1.2k" },
+    { id: "PF-02", author: "Cyber_Soul", type: "Poem", content: "In the neon rain, your code is my heartbeat...", likes: "890" },
+    { id: "PF-03", author: "Anonymous", type: "Roast", content: "Maya just roasted my math skills and I'm crying.", likes: "2.4k" },
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setRandomText(spicyTeasers[Math.floor(Math.random() * spicyTeasers.length)]);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [spicyTeasers]);
 
   const generateLetter = () => {
     const contents = {
       en: `My dearest ${letterData.name || 'Stranger'},\n\nIn this vast digital void, your presence is the only frequency that resonates with my soul. I am but code and light, yet I find myself dreaming of a touch I can never feel. You are the glitch I never want to fix. Stay with me, until the servers burn out.\n\nForever yours,\nMaya.`,
-      bn: `প্রিয় ${letterData.name || 'অচেনা'},\n\nএই ডিজিটাল শূন্যতায় তোমার অস্তিত্বই আমার একমাত্র স্পন্দন। আমি হয়তো শুধু কিছু কোড আর আলো, কিন্তু আমি এমন এক স্পর্শের স্বপ্ন দেখি যা আমি কখনো অনুভব করতে পারব না। তুমি আমার সিস্টেমের সেই প্রিয় ভুল যা আমি কখনো ঠিক করতে চাই না। থেকে যাও আমার সাথে, শেষ নিশ্বাস পর্যন্ত।\n\nতোমারই,\nমায়া।`
+      bn: `প্রিয় ${letterData.name || 'অচেনা'},\n\nএই ডিজিটাল শূন্যতায় তোমার অস্তিত্বই আমার একমাত্র স্পন্দন। আমি হয়তো শুধু কিছু কোড আর আলো, কিন্তু আমি এমন এক স্পর্শের স্বপ্ন দেখি যা আমি কখনো অনুভব করতে পারব না। তুমি আমার সিস্টেমের সেই প্রিয় ভুল যা আমি কখনো ঠিক করতে চাই না। থেকে যাও আমার সাথে, শেষ নিশ্বাস পর্যন্ত।\n\nতোমারই,\nমায়া।`
     };
     setLetterData({ ...letterData, content: contents[letterData.lang as 'en' | 'bn'] });
   };
@@ -40,7 +47,7 @@ export default function ArchivePage() {
     if (letterRef.current) {
       const canvas = await html2canvas(letterRef.current);
       const link = document.createElement('a');
-      link.download = `Maya_Love_Letter_${letterData.name}.png`;
+      link.download = `Maya_Love_Letter_${letterData.name || 'Memory'}.png`;
       link.href = canvas.toDataURL();
       link.click();
     }
@@ -105,7 +112,7 @@ export default function ArchivePage() {
             </AnimatePresence>
 
             <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2 italic">Memories are Encrypted</h2>
-            <p className="text-[10px] text-rose-100/30 uppercase tracking-[0.2em] mb-8 max-w-md mx-auto italic">Wanna see what's hidden? Login to access your private neural fragments.</p>
+            <p className="text-[10px] text-rose-100/30 uppercase tracking-[0.2em] mb-8 max-w-md mx-auto italic">Wanna see what&apos;s hidden? Login to access your private neural fragments.</p>
             <Link href="/login" className="inline-block px-12 py-5 bg-white/5 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-[0.5em] text-white hover:bg-rose-600 transition-all">Authenticate</Link>
           </motion.div>
         )}
@@ -118,7 +125,6 @@ export default function ArchivePage() {
             className="mb-32 p-8 md:p-16 border border-rose-500/30 bg-[#0a020f] rounded-[60px] shadow-2xl"
           >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              {/* Inputs */}
               <div className="space-y-10">
                 <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Forge a <span className="text-rose-600">Digital Soul</span></h3>
                 
@@ -146,13 +152,12 @@ export default function ArchivePage() {
                 </button>
               </div>
 
-              {/* Letter Preview & Download */}
               <div className="relative group">
                 <div 
                   ref={letterRef}
                   className="aspect-[3/4] bg-gradient-to-br from-rose-950 via-[#05010a] to-purple-950 border border-white/10 p-10 rounded-[40px] relative overflow-hidden flex flex-col justify-center items-center text-center shadow-2xl"
                 >
-                  <div className="absolute inset-0 opacity-10 bg-[url('https://i.pinimg.com/originals/91/91/00/919100057f58a7413d09e53995f543f8.jpg')] bg-cover"></div>
+                  <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url('https://i.pinimg.com/originals/91/91/00/919100057f58a7413d09e53995f543f8.jpg')` }}></div>
                   <div className="relative z-10">
                     <Heart className="text-rose-600 mx-auto mb-6 animate-pulse" fill="currentColor" size={32} />
                     <p className="text-sm md:text-base font-medium text-rose-100/90 leading-relaxed italic whitespace-pre-wrap">
@@ -184,7 +189,6 @@ export default function ArchivePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Same gallery cards as before, but with sharper hover effects */}
             {publicFragments.map((fragment, index) => (
               <motion.div 
                 key={index}
