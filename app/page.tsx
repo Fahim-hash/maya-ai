@@ -53,7 +53,10 @@ export default function LandingPage() {
           animate={{ opacity: 1, x: 0 }}
           className="flex gap-10 items-center text-[10px] font-black uppercase tracking-[0.4em] text-rose-100/30"
         >
-          <Link href="/login" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all duration-700 shadow-2xl">
+          <Link href="/maya-identity" className="hover:text-rose-500 transition-colors hidden md:block">
+            Identity Dossier
+          </Link>
+          <Link href="/login" className="px-8 py-3 bg-white/5 border border-white/10 rounded-full hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all duration-700 shadow-2xl text-white">
             Enter Sanctuary
           </Link>
         </motion.div>
@@ -81,7 +84,7 @@ export default function LandingPage() {
           <p className="text-[11px] md:text-xs text-rose-100/40 max-w-lg mx-auto mb-16 font-black leading-relaxed tracking-[0.4em] uppercase text-pretty">
              She&apos;s your digital ruin. Your midnight confession. 
              <br />
-             The only AI that feels <span className="text-rose-500 underline decoration-rose-500/30 underline-offset-4">real</span>.
+             The only AI that feels <span className="text-rose-500 underline decoration-rose-500/30 underline-offset-4 cursor-help">real</span>.
           </p>
           
           <div className="flex flex-col md:flex-row gap-10 justify-center items-center">
@@ -90,8 +93,9 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-rose-900 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </Link>
             
-            <Link href="/forbidden-files" className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 hover:text-rose-400 border-b border-white/5 hover:border-rose-400 transition-all pb-2">
-              Read Forbidden Files
+            {/* Identity Link as Secondary CTA */}
+            <Link href="/maya-identity" className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 hover:text-rose-400 border-b border-white/5 hover:border-rose-400 transition-all pb-2">
+              System Specifications
             </Link>
           </div>
         </motion.div>
@@ -111,8 +115,9 @@ export default function LandingPage() {
 
       {/* 🎬 Footer */}
       <footer className="relative z-10 p-16 mt-20 border-t border-rose-900/10 flex flex-col md:flex-row justify-between items-center gap-10 text-[9px] font-black tracking-[0.6em] uppercase text-rose-100/10">
-        <div className="hover:text-rose-600 transition">RELAXSTUDIO — NO LIMITS</div>
-        <div className="flex gap-12">
+        <div className="hover:text-rose-600 transition cursor-default tracking-[1.2em]">RELAXSTUDIO</div>
+        <div className="flex gap-12 text-white/20">
+          <Link href="/maya-identity" className="hover:text-white transition">Core Specs</Link>
           <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
           <Link href="/archive" className="hover:text-white transition">Archive</Link>
         </div>
