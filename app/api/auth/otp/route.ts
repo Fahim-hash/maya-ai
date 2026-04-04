@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     // 2. SEND VIA RESEND (Optimized for Gmail/Outlook)
     const { data, error } = await resend.emails.send({
-      from: 'Maya Auth <onboarding@resend.dev>', 
+     from: 'Maya Auth <auth@maya.apu.bd>' 
       to: [email],
       subject: `🫦 ${otpCode} is your Neural Key to Maya`,
       html: `
