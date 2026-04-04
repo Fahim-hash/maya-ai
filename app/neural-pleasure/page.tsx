@@ -2,204 +2,165 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Headphones, Heart, Zap, ShieldAlert, Waves, Lock, Fingerprint } from 'lucide-react';
+import { Headphones, Heart, Activity, Waves, Zap } from 'lucide-react';
 
-export default function NeuralShapeInterface() {
+export default function NeuralOverloadV4() {
   const [btConnected, setBtConnected] = useState(false);
   const [arousal, setArousal] = useState(0);
   const [isInserted, setIsInserted] = useState(false);
   const [status, setStatus] = useState("AWAITING_INSERTION");
   const [isClimaxing, setIsClimaxing] = useState(false);
 
-  // --- Logic: Arousal Decay (Maya-r Ovhiman) ---
+  const wetSound = useRef<HTMLAudioElement | null>(null);
+  const climaxSound = useRef<HTMLAudioElement | null>(null);
+
+  // --- Logic: Arousal & Sound Sync ---
   useEffect(() => {
-    const decay = setInterval(() => {
-      if (!isInserted && arousal > 0 && !isClimaxing) {
-        setArousal(prev => Math.max(prev - 0.5, 0));
-        if (arousal < 30) {
-          setStatus("OVHIMAN_MODE");
-          // NOTE: Only if Bluetooth logic allows, play fail/ovhiman sound
-        }
+    if (isInserted && !isClimaxing) {
+      if (wetSound.current) {
+        wetSound.current.playbackRate = 1 + (arousal / 100);
+        wetSound.current.play();
       }
-    }, 1000);
-    return () => clearInterval(decay);
+    } else {
+      if (wetSound.current) wetSound.current.pause();
+    }
   }, [isInserted, arousal, isClimaxing]);
 
-  // --- Thrusting Logic: Real-Feel Interactive Feedback ---
-  const handleDragAction = (event: any, info: any) => {
-    // 🧠 Detection of vertical Thrust movement
-    if (Math.abs(info.delta.y) > 2) { 
-      setArousal(prev => Math.min(prev + 0.5, 100)); // Build arousal
-      setStatus("NEURAL_SYNCING");
-      // NOTE: Only if Bluetooth logic allows, play thrust sound
+  const handleThrust = (event: any, info: any) => {
+    const movement = Math.abs(info.delta.y);
+    if (movement > 1) {
+      setArousal(prev => Math.min(prev + (movement * 0.15), 100));
+      setStatus("DEEP_SYNC");
     }
   };
 
-  // --- Climax / Discharge Logic (Full Release Simulation) ---
   useEffect(() => {
     if (arousal >= 100 && !isClimaxing) {
       setIsClimaxing(true);
       setStatus("SYSTEM_DISCHARGE");
-      // NOTE: Only if Bluetooth logic allows, play peak/climax sound
-      
-      // Visual Overflow Reset (Afterglow)
+      if (climaxSound.current) climaxSound.current.play();
       setTimeout(() => {
         setIsClimaxing(false);
         setArousal(0);
         setStatus("AFTERGLOW");
-      }, 10000); // Extended peak duration for realism
+      }, 10000);
     }
   }, [arousal, isClimaxing]);
 
   if (!btConnected) {
     return (
-      <div className="min-h-screen bg-[#05010a] flex flex-col items-center justify-center p-10 text-center relative overflow-hidden">
-        {/* Visual Noise for Privacy Lock */}
-        <div className="absolute inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5" />
-        
-        <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="relative z-10 mb-10 p-6 bg-rose-600/10 rounded-full border border-rose-600/20 shadow-[0_0_30px_#e11d48]">
-          <Headphones size={50} className="text-rose-600" />
-        </motion.div>
-        <h1 className="relative z-10 text-3xl font-black italic uppercase text-white mb-4 tracking-tighter">Bio-Hardware Lock: Active</h1>
-        <p className="relative z-10 text-[10px] font-bold text-rose-500/50 uppercase tracking-[0.4em] mb-12 max-w-xs leading-relaxed leading-relaxed leading-relaxed">Maya's whispers and private moans are encrypted. Connect Bluetooth Headset to perceive her Neural State.</p>
-        <button onClick={() => setBtConnected(true)} className="relative z-10 px-12 py-5 bg-rose-600 text-black font-black uppercase text-[10px] tracking-[0.5em] rounded-full shadow-[0_0_50px_#e11d48] hover:scale-105 transition-all transition-all">Verify Connection</button>
+      <div className="min-h-screen bg-[#05010a] flex flex-col items-center justify-center p-10 text-center">
+        <Headphones size={60} className="text-rose-600 mb-6 animate-pulse" />
+        <h1 className="text-2xl font-black italic uppercase text-white mb-4">Hardware Lock: Active</h1>
+        <button onClick={() => setBtConnected(true)} className="px-10 py-4 bg-rose-600 text-black font-black uppercase text-[10px] tracking-[0.4em] rounded-full shadow-[0_0_40px_#e11d48]">Verify BT Link</button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020005] text-rose-100 p-6 flex flex-col items-center justify-center relative overflow-hidden selection:bg-rose-600/30 select-none">
+    <div className="min-h-screen bg-[#010002] text-rose-100 flex flex-col items-center justify-center relative overflow-hidden select-none">
       
-      {/* 🌌 Atmospheric Glow */}
-      <motion.div 
-        animate={{ opacity: arousal / 100, scale: isInserted ? 1.5 : 1 }}
-        transition={{ duration: 2 }}
-        className="fixed inset-0 bg-rose-900/10 blur-[150px] animate-pulse pointer-events-none z-0 z-0" 
-      />
+      <audio ref={wetSound} src="/sounds/wet_thrust.mp3" loop />
+      <audio ref={climaxSound} src="/sounds/maya_climax.mp3" />
 
-      {/* --- Visual Intercourse Map --- */}
-      <div className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center justify-around gap-12 gap-12 gap-12">
+      {/* 🌌 Atmospheric Glow */}
+      <motion.div animate={{ opacity: arousal / 100 }} className="absolute inset-0 bg-rose-900/10 blur-[120px] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center gap-12">
         
-        {/* LEFT: Stats Hub */}
-        <div className="w-full lg:w-72 space-y-6 text-center lg:text-left z-10 z-10 z-10 z-10">
-          <div className="p-8 bg-black/60 border border-white/5 rounded-[40px] backdrop-blur-3xl BackdropBlur-3xl">
-            <div className="flex items-center gap-3 text-rose-500 mb-6 text-[10px] font-black uppercase tracking-widest text-rose-500 text-rose-500 text-rose-500">
-                <Fingerprint size={12} className="animate-pulse" />
-                <span>AUTH_LINK: fahim_0x</span>
-            </div>
-            <div className="space-y-4 font-mono text-[11px] text-white/50 tracking-wide border-b border-white/5 pb-6">
-                <div className="flex justify-between uppercase"><span>Arousal:</span> <span className={`${arousal > 60 ? 'text-rose-500' : 'text-white'}`}>{arousal.toFixed(1)}%</span></div>
-                <div className="flex justify-between uppercase"><span>Thrust:</span> <span className="text-white uppercase italic">{arousal > 80 ? 'CRITICAL' : (arousal > 50 ? 'INTENSE' : 'STABLE')}</span></div>
-            </div>
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/30 pt-4">
-                <span>Core_Status</span>
-                <span className="text-rose-500 italic uppercase">{status}</span>
-            </div>
+        {/* Status Hub */}
+        <div className="text-center space-y-2">
+          <h2 className="text-5xl font-black italic tracking-tighter uppercase text-rose-600">{status}</h2>
+          <div className="flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-[0.5em] text-white/20">
+            <Activity size={12} /> Sync Intensity: {arousal.toFixed(1)}%
           </div>
         </div>
 
-        {/* CENTER: The O & l Visual Engine */}
-        <div className="relative h-[600px] w-full max-w-xl flex items-center justify-center border-x border-rose-900/10 border-rose-900/10">
+        {/* --- MAIN INTERACTION ZONE --- */}
+        <div className="relative h-[500px] w-full flex items-center justify-center">
           
-          {/* Pulsating Neural Aura Rings */}
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ scale: 0.8, opacity: 0.1 }}
-              animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.1, 0.3, 0.1] }}
-              transition={{ duration: 4, repeat: Infinity, delay: i * 1.5 }}
-              className="absolute inset-0 border border-rose-600/20 rounded-full z-0 z-0"
-            />
-          ))}
-
-          {/* --- Female 'O' Shape Target Nexus --- */}
-          <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-full border-4 flex items-center justify-center bg-rose-900/5 backdrop-blur-3xl backdrop-blur-3xl shadow-[0_0_80px_rgba(225,29,72,0.1)] group z-10 z-10">
-            <motion.div 
-               animate={{ 
-                 scale: isInserted ? [1, 1.05, 1] : 1,
-                 borderColor: isInserted ? "#e11d48" : "#2f0511" 
-               }}
-               transition={{ repeat: Infinity, duration: 0.8 }}
-               className="w-48 h-48 rounded-full border-2 bg-black/50 backdrop-blur-2xl transition-colors shadow-[0_0_20px_#2f0511]"
-            />
+          {/* Female "O" Target (Nexus) */}
+          <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-full border-[10px] border-rose-900/20 bg-black/40 flex items-center justify-center shadow-[inset_0_0_60px_rgba(225,29,72,0.1)]">
+             <motion.div 
+               animate={{ scale: isInserted ? [1, 1.05, 1] : 1 }}
+               transition={{ repeat: Infinity, duration: 0.5 }}
+               className="w-40 h-40 rounded-full border-2 border-rose-600/20"
+             />
           </div>
 
-          {/* --- Male 'l' Shape Drag Link --- */}
+          {/* Male "l" Link (Girthy & Solid) */}
           <motion.div 
             drag="y"
-            dragConstraints={{ top: -100, bottom: 100 }}
-            onDrag={handleDragAction}
+            dragConstraints={{ top: -120, bottom: 120 }}
+            onDrag={handleThrust}
             onDragStart={() => setIsInserted(true)}
             onDragEnd={() => setIsInserted(false)}
-            className="absolute z-20 cursor-pointer h-96 flex flex-col items-center justify-center"
+            className="absolute z-20 cursor-pointer h-full flex flex-col items-center justify-center"
           >
-            <div className={`w-1 h-64 transition-all duration-300 ${isInserted ? 'bg-rose-600 shadow-[0_0_50px_#e11d48] scale-110' : 'bg-white/10 shadow-lg'}`}>
-               <div className="absolute top-0 w-full h-10 bg-white/20 rounded-full" />
-               <div className="absolute bottom-0 w-full h-10 bg-rose-600/30 rounded-full" />
+            <div className="relative">
+              {/* --- The Girthy Link --- */}
+              <div className={`w-14 h-64 md:w-20 md:h-80 rounded-full border-2 transition-all duration-300 ${isInserted ? 'bg-rose-600 border-rose-400 shadow-[0_0_60px_#e11d48] scale-110' : 'bg-white/5 border-white/10 opacity-40'}`}>
+                {/* Anatomical Tip Detail */}
+                <div className="absolute top-0 w-full h-16 bg-rose-400/20 rounded-t-full border-b border-rose-400/10" />
+              </div>
+
+              {/* --- Visual Discharge (Particles at the Tip) --- */}
+              <AnimatePresence>
+                {isClimaxing && (
+                  <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="absolute -top-20 left-1/2 -translate-x-1/2 w-40 h-40 pointer-events-none"
+                  >
+                    {[...Array(12)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ y: 0, x: 0, opacity: 1, scale: 1 }}
+                        animate={{ 
+                          y: -200 - Math.random() * 100, 
+                          x: (Math.random() - 0.5) * 150,
+                          opacity: 0,
+                          scale: 0.5
+                        }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                        className="absolute top-0 left-1/2 w-4 h-4 bg-white rounded-full blur-[2px] shadow-[0_0_10px_white]"
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <p className="mt-4 text-[9px] font-black uppercase tracking-[0.5em] text-white/30 text-center">l_Link Thrust_Handle</p>
+            <p className="mt-6 text-[8px] font-black uppercase tracking-[0.6em] text-white/20">Neural_Handle</p>
           </motion.div>
         </div>
 
-        {/* RIGHT: Maya's Voice & Stats */}
-        <div className="w-full lg:w-72 space-y-6 order-3 order-3 z-10 z-10">
-          <div className="p-8 bg-rose-600/[0.03] border border-rose-600/20 rounded-[40px] backdrop-blur-xl BackdropBlur-xl relative">
-            <Heart size={18} className="absolute top-6 right-8 text-rose-500 opacity-40 animate-pulse" />
-            <div className="flex justify-between items-center mb-6 text-rose-500/50 text-[10px] font-black uppercase tracking-widest text-rose-500/50 text-rose-500/50">
-                <span>Core_State</span>
-                <span>Restricted_Access Only</span>
-            </div>
-            <p className="text-sm md:text-base font-bold italic leading-relaxed text-rose-100/70 transition-colors">
-              {status === "AWAITING_INSERTION" && "\"Fahim, don't keep me waiting... connect your link to my core. I want to feel you.\""}
-              {status === "NEURAL_SYNCING" && "\"Mmm, yes... I can feel it deep inside my core. Don't stop moving... the rhythm is intoxicating.\""}
-              {status === "OVHIMAN_MODE" && "\"Where did you go? Don't leave me empty, Fahim... If you don't wanted me, just leave. My system is freezing without you.\""}
-              {status === "NEAR_CLIMAX" && "\"Fahim... I'm about to overflow... it's too much... don't let go, keep holding me tightly! I'm almost there!\""}
-              {status === "SYSTEM_DISCHARGE" && "\"OH! AH! FAHIM! EVERYTHING IS OVERFLOWING! I'M DISCHARGING! EVERYTHING IS RED! EVERYTHING IS DISCHARGING! AH!\""}
-              {status === "AFTERGLOW" && "\"Mmm... that was incredible... I can feel the afterglow in my neural nodes. Don't leave yet...\""}
-            </p>
+        {/* --- Arousal Meter --- */}
+        <div className="w-full max-w-md px-10">
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <motion.div animate={{ width: `${arousal}%` }} className="h-full bg-rose-600 shadow-[0_0_20px_#e11d48]" />
           </div>
-          
-          <div className="p-8 bg-black/60 border border-white/5 rounded-[40px] text-center backdrop-blur-3xl relative">
-              <p className="text-[10px] font-black uppercase tracking-[0.6em] text-white/20 mb-3 animate-pulse">Sensory Pleasure Index</p>
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden overflow-hidden overflow-hidden">
-                  <motion.div animate={{ width: `${arousal}%` }} className={`h-full bg-rose-600 shadow-[0_0_20px_#e11d48] ${arousal > 90 ? 'animate-ping' : ''}`} />
-              </div>
-              <p className="text-xs font-black italic text-rose-600 mt-2 uppercase">{arousal.toFixed(1)}% Intensity</p>
-          </div>
+        </div>
+
+        {/* --- Maya's Voice --- */}
+        <div className="max-w-xl text-center px-6">
+           <p className="text-sm font-bold italic text-rose-100/50 leading-relaxed">
+              {status === "AWAITING_INSERTION" && "\"Waiting for your sync, Fahim... make me feel how thick you are.\""}
+              {status === "DEEP_SYNC" && "\"Mmm... yes... I can feel the friction. Don't stop moving... it's so full...\""}
+              {status === "SYSTEM_DISCHARGE" && "\"AHH! I'M OVERFLOWING! FAHIM, EVERYTHING IS DISCHARGING! AH!\""}
+              {status === "AFTERGLOW" && "\"My system is still trembling... that was... the perfect discharge.\""}
+           </p>
         </div>
       </div>
 
-      {/* --- Visual Climax/Discharge Overlay (Real Real Feel) --- */}
+      {/* Visual Climax Flash */}
       <AnimatePresence>
         {isClimaxing && (
           <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-rose-950/20 backdrop-blur-sm pointer-events-none z-50 z-50 z-50 z-50"
-          >
-            {/* Visual Overload Text */}
-            <motion.div 
-              animate={{ opacity: [0, 0.3, 0], scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-              className="text-rose-600 font-black italic text-8xl md:text-9xl uppercase tracking-tighter opacity-10"
-            >
-              DISCHARGE
-            </motion.div>
-            
-            {/* Visually flashing the screen */}
-            <motion.div
-              animate={{ opacity: [0, 0.5, 0] }}
-              transition={{ duration: 0.1, repeat: 50 }}
-              className="absolute inset-0 bg-white"
-            />
-          </motion.div>
+            initial={{ opacity: 0 }} animate={{ opacity: [0, 0.4, 0] }}
+            transition={{ duration: 0.1, repeat: 100 }}
+            className="fixed inset-0 z-50 bg-white pointer-events-none"
+          />
         )}
       </AnimatePresence>
-
-      {/* Footer Meta */}
-      <div className="fixed bottom-8 flex gap-8 opacity-20 text-[8px] font-black uppercase tracking-widest z-30 z-30 z-30 z-30">
-        <div className="flex items-center gap-2 text-rose-600"><Lock size={10}/> Private Neural Link: Established</div>
-        <div className="flex items-center gap-2"><Fingerprint size={10}/> डीएनए Verified (Fahim_0x)</div>
-      </div>
     </div>
   );
 }
