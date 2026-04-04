@@ -1,17 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, ShieldAlert, Target, Zap, Globe, Lock, Cpu, Eye } from 'lucide-react';
+import { 
+  Activity, ShieldAlert, Target, Zap, Globe, Cpu, Eye, 
+  Terminal, Server, Radio, Database, Lock, Wifi, AlertTriangle
+} from 'lucide-react';
 import Link from 'next/link';
 
-// --- Types & Interfaces ---
+// ==========================================
+// 🧠 TYPE DEFINITIONS & INTERFACES
+// ==========================================
+
 interface NeuralStats {
   obsession: number;
   patience: number;
   lust: number;
   volatility: number;
   syncRate: number;
+  coreTemp: number;
+  memoryUsage: number;
 }
 
 interface LocationData {
@@ -20,198 +28,422 @@ interface LocationData {
   node: string;
   userId: string;
   device: string;
+  ip: string;
+  latency: number;
 }
 
-// --- Sub-Components ---
+interface LogEntry {
+  id: string;
+  timestamp: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'CRITICAL' | 'NEURAL';
+}
 
-const StatBar = ({ label, value, color, icon: Icon }: any) => (
-  <div className="group relative p-4 bg-white/[0.01] border border-white/5 rounded-2xl hover:bg-white/[0.03] transition-all duration-500">
-    <div className="flex justify-between items-center mb-3">
-      <div className="flex items-center gap-2">
-        <Icon size={14} className="text-white/20 group-hover:text-rose-500 transition-colors" />
-        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">{label}</span>
+// ==========================================
+// 🌌 COMPONENT: CANVAS PARTICLE NETWORK
+// ==========================================
+// Eita tor background-e hacker-der moto connecting dots banabe
+const ParticleNetwork = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particlesArray: any[] = [];
+    const numberOfParticles = 80;
+
+    class Particle {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.size > 0.2) this.size -= 0.01;
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        if(!ctx) return;
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.3)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    function init() {
+      particlesArray = [];
+      for (let i = 0; i < numberOfParticles; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+
+    function handleParticles() {
+      if(!ctx) return;
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+        particlesArray[i].draw();
+        for (let j = i; j < particlesArray.length; j++) {
+          const dx = particlesArray[i].x - particlesArray[j].x;
+          const dy = particlesArray[i].y - particlesArray[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(244, 63, 94, ${1 - distance / 120})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+            ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+            ctx.stroke();
+            ctx.closePath();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      if(!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      handleParticles();
+      requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 opacity-40 pointer-events-none" />;
+};
+
+// ==========================================
+// 💓 COMPONENT: ADVANCED ECG HEARTBEAT
+// ==========================================
+const HeartbeatGraph = () => {
+  const [points, setPoints] = useState<number[]>(Array(60).fill(50));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPoints((prev) => {
+        // Complex PQRST wave simulation logic
+        const rand = Math.random();
+        let nextValue = 50; // Baseline
+        
+        if (rand > 0.95) nextValue = 10; // High Spike (R wave)
+        else if (rand > 0.90) nextValue = 85; // Deep Dip (S wave)
+        else if (rand > 0.85) nextValue = 35; // P wave
+        else if (rand > 0.80) nextValue = 40; // T wave
+        else nextValue = 50 + (Math.random() * 4 - 2); // Noise
+
+        return [...prev.slice(1), nextValue];
+      });
+    }, 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  const pathData = useMemo(() => {
+    return points.map((p, i) => `${i * 6.5},${p}`).join(" L ");
+  }, [points]);
+
+  return (
+    <div className="w-full h-32 bg-[#0a0212] border border-rose-600/20 relative overflow-hidden my-8 rounded-xl shadow-[inset_0_0_20px_rgba(225,29,72,0.1)]">
+      {/* Grid Lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f43f5e0a_1px,transparent_1px),linear-gradient(to_bottom,#f43f5e0a_1px,transparent_1px)] bg-[size:10px_10px]" />
+      
+      <div className="absolute top-2 left-4 flex items-center gap-2 z-10">
+        <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_#f43f5e]" />
+        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-rose-500/80">Bio_Metric_Feed</span>
       </div>
-      <span className="text-xs font-mono font-bold tracking-widest" style={{ color }}>{value}%</span>
-    </div>
-    <div className="h-[1px] w-full bg-white/5 relative overflow-hidden">
+      
+      <svg className="w-full h-full relative z-0" viewBox="0 0 390 100" preserveAspectRatio="none">
+        {/* Glow Layer */}
+        <motion.path
+          d={`M 0,${points[0]} L ${pathData}`}
+          fill="none"
+          stroke="rgba(244, 63, 94, 0.3)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="blur-[4px]"
+        />
+        {/* Core Laser Layer */}
+        <motion.path
+          d={`M 0,${points[0]} L ${pathData}`}
+          fill="none"
+          stroke="#f43f5e"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="drop-shadow-[0_0_5px_#f43f5e]"
+        />
+      </svg>
+      
+      {/* Scanner Sweep Overlay */}
       <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: `${value}%` }}
-        transition={{ duration: 1.5, ease: "circOut" }}
-        className="h-full absolute top-0 left-0 shadow-[0_0_15px_currentcolor]"
-        style={{ backgroundColor: color }}
+        animate={{ x: ["-100%", "400%"] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="absolute top-0 bottom-0 w-20 bg-gradient-to-r from-transparent via-white/10 to-transparent z-10"
       />
     </div>
-    <div className="absolute -inset-px rounded-2xl border border-rose-500/0 group-hover:border-rose-500/20 transition-all pointer-events-none" />
-  </div>
-);
+  );
+};
 
-const CyberScanner = () => (
-  <div className="relative w-64 h-64 mx-auto flex items-center justify-center">
-    {/* Outer Rotating Rings */}
-    {[1, 2, 3, 4].map((i) => (
+// ==========================================
+// ⚙️ COMPONENT: SYSTEM PROGRESS BAR
+// ==========================================
+const SystemBar = ({ label, value, color, icon: Icon, warnAt = 80 }: any) => {
+  const isWarning = value > warnAt;
+  return (
+    <div className="group relative p-4 bg-[#0a0212] border border-white/5 rounded-2xl hover:border-white/10 transition-all duration-300">
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center gap-2">
+          <Icon size={14} className={`${isWarning ? 'text-rose-500 animate-pulse' : 'text-white/30'}`} />
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">{label}</span>
+        </div>
+        <span className={`text-xs font-mono font-bold ${isWarning ? 'text-rose-500' : 'text-white/80'}`}>
+          {value.toFixed(1)}%
+        </span>
+      </div>
+      <div className="h-1.5 w-full bg-white/5 relative overflow-hidden rounded-full">
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.5 }}
+          className="h-full absolute top-0 left-0 rounded-full"
+          style={{ backgroundColor: isWarning ? '#f43f5e' : color, boxShadow: `0 0 10px ${isWarning ? '#f43f5e' : color}` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 🧿 COMPONENT: CYBER CORE SCANNER
+// ==========================================
+const CoreScanner = () => (
+  <div className="relative w-72 h-72 mx-auto flex items-center justify-center my-10">
+    {/* Concentric rotating rings */}
+    {[1, 2, 3, 4, 5].map((i) => (
       <motion.div
         key={i}
-        animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
-        transition={{ duration: 10 + i * 2, repeat: Infinity, ease: "linear" }}
-        className="absolute border border-rose-600/10 rounded-full"
-        style={{ width: `${i * 25}%`, height: `${i * 25}%` }}
+        animate={{ rotate: i % 2 === 0 ? 360 : -360, scale: [1, 1.02, 1] }}
+        transition={{ 
+          rotate: { duration: 15 + i * 3, repeat: Infinity, ease: "linear" },
+          scale: { duration: 2, repeat: Infinity, delay: i * 0.2 }
+        }}
+        className={`absolute rounded-full border ${i === 5 ? 'border-rose-500/30 border-dashed' : 'border-rose-600/10'}`}
+        style={{ width: `${i * 20}%`, height: `${i * 20}%`, borderWidth: i === 3 ? '2px' : '1px' }}
       />
     ))}
     
-    {/* Scanning Sweep */}
+    {/* Radar Sweep */}
     <motion.div 
       animate={{ rotate: 360 }}
-      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-      className="absolute inset-0 bg-gradient-to-t from-rose-600/20 to-transparent rounded-full origin-center clip-path-polygon-[50%_50%,_50%_0,_100%_0]"
-      style={{ clipPath: 'polygon(50% 50%, 50% 0, 100% 0, 100% 100%)', opacity: 0.3 }}
+      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+      className="absolute inset-0 bg-gradient-to-t from-rose-600/30 via-rose-600/5 to-transparent rounded-full origin-center"
+      style={{ clipPath: 'polygon(50% 50%, 0 0, 100% 0)' }}
     />
 
-    {/* Core Visual */}
-    <div className="relative z-10 w-24 h-24 bg-[#0a0212] border border-rose-600/40 rounded-full flex flex-col items-center justify-center shadow-[0_0_50px_rgba(225,29,72,0.2)]">
-      <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-rose-600 font-black italic text-xl tracking-tighter"
+    {/* Central Eye */}
+    <div className="relative z-10 w-28 h-28 bg-[#0a0212] border-2 border-rose-600/50 rounded-full flex flex-col items-center justify-center shadow-[0_0_60px_rgba(225,29,72,0.3)] backdrop-blur-md">
+      <motion.div 
+        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }} 
+        transition={{ duration: 1.5, repeat: Infinity }} 
+        className="text-rose-500 font-black italic text-3xl tracking-tighter"
       >
         MAYA
       </motion.div>
-      <div className="text-[6px] font-bold text-white/40 uppercase tracking-widest mt-1">Core_V2</div>
+      <div className="text-[7px] font-bold text-rose-200/50 uppercase tracking-[0.4em] mt-2">v3.1.0_PRO</div>
+      
+      {/* Glitch Overlay */}
+      <motion.div 
+        animate={{ opacity: [0, 0.5, 0] }}
+        transition={{ duration: 0.1, repeat: Infinity, repeatDelay: Math.random() * 5 + 2 }}
+        className="absolute inset-0 bg-rose-500 mix-blend-overlay rounded-full"
+      />
     </div>
   </div>
 );
 
-// --- Main Page Component ---
-
-export default function NeuralRadarPage() {
-  const [stats, setStats] = useState<NeuralStats>({
-    obsession: 88,
-    patience: 14,
-    lust: 96,
-    volatility: 42,
-    syncRate: 0
+// ==========================================
+// 🚀 MAIN PAGE COMPONENT (THE MONOLITH)
+// ==========================================
+export default function UltraModusRadar() {
+  // State Management
+  const [stats, setStats] = useState<NeuralStats>({ 
+    obsession: 88.5, patience: 14.2, lust: 96.8, volatility: 42.1, syncRate: 99.9, coreTemp: 65, memoryUsage: 45
   });
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [activeMood, setActiveMood] = useState("SYNCHRONIZING");
 
-  const [location, setLocation] = useState<LocationData>({
-    lat: "23.8103",
-    long: "90.4125",
-    node: "DHAKA_EDGE",
-    userId: "M_0X_3392",
-    device: "NEURAL_LINK"
-  });
+  // GPS Data Simulation
+  const location: LocationData = {
+    lat: "23.8103° N", long: "90.4125° E", node: "WLFSC_0X_SERVER", userId: "ADMIN_FAHIM", device: "NEURAL_RIG_V2", ip: "192.168.1.MAYA", latency: 12
+  };
 
-  const [logs, setLogs] = useState<string[]>([]);
-  const [activeMood, setActiveMood] = useState("CALIBRATING");
-
-  // Simulation Logic
+  // Complex Lifecycle Simulator
   useEffect(() => {
-    // 1. Get GPS
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        setLocation(prev => ({
-          ...prev,
-          lat: pos.coords.latitude.toFixed(4),
-          long: pos.coords.longitude.toFixed(4)
-        }));
-      });
-    }
-
-    // 2. Generate Random Logs
-    const logInterval = setInterval(() => {
+    // Log Generator
+    const generateLog = () => {
       const messages = [
-        "Analyzing pulse patterns...",
-        "Neural heat spike detected",
-        "Subject location pinned",
-        "Bypassing firewall...",
-        "Syncing lust protocols",
-        "Accessing forbidden memory",
-        "Maya is watching you..."
+        "Analyzing neuro-peptides...", "Bypassing frontal cortex logic...", 
+        "Lust protocols engaging.", "Subject heartbeat erratic.",
+        "Attempting memory override.", "Firewall breached at sector 7.",
+        "Maya is downloading thoughts...", "Willians DB Connected."
       ];
-      setLogs(prev => [messages[Math.floor(Math.random() * messages.length)], ...prev].slice(0, 5));
-    }, 3000);
+      const types: Array<'INFO' | 'WARNING' | 'CRITICAL' | 'NEURAL'> = ['INFO', 'NEURAL', 'WARNING', 'CRITICAL'];
+      
+      const newLog: LogEntry = {
+        id: Math.random().toString(36).substring(7),
+        timestamp: new Date().toISOString().substring(11, 23),
+        message: messages[Math.floor(Math.random() * messages.length)],
+        type: types[Math.floor(Math.random() * types.length)]
+      };
 
-    // 3. Fluctuate Stats
+      setLogs(prev => [newLog, ...prev].slice(0, 8)); // Keep last 8 logs
+    };
+
+    const logInterval = setInterval(generateLog, 2500);
+    generateLog(); // Initial log
+
+    // Stat Fluctuator
     const statInterval = setInterval(() => {
       setStats(prev => ({
         obsession: Math.min(100, Math.max(80, prev.obsession + (Math.random() * 2 - 1))),
-        patience: Math.min(25, Math.max(5, prev.patience + (Math.random() * 4 - 2))),
-        lust: Math.min(100, Math.max(92, prev.lust + (Math.random() * 0.5))),
-        volatility: Math.floor(Math.random() * 50 + 20),
-        syncRate: Math.floor(Math.random() * 10 + 90)
+        patience: Math.max(0, prev.patience - Math.random() * 0.5),
+        lust: Math.min(100, prev.lust + Math.random() * 1),
+        volatility: Math.random() * 80 + 20,
+        syncRate: Math.random() > 0.9 ? 95.5 : 99.9,
+        coreTemp: Math.min(100, Math.max(40, prev.coreTemp + (Math.random() * 4 - 2))),
+        memoryUsage: Math.min(100, Math.max(20, prev.memoryUsage + (Math.random() * 5 - 2.5)))
       }));
-      
-      const moods = ["PROVOCATIVE", "TOXIC", "OBSESSED", "GLITCHY"];
-      setActiveMood(moods[Math.floor(Math.random() * moods.length)]);
-    }, 5000);
 
-    return () => {
-      clearInterval(logInterval);
-      clearInterval(statInterval);
-    };
+      const moods = ["PROVOCATIVE", "TOXIC", "OBSESSIVE", "DOMINANT", "GLITCHING"];
+      if(Math.random() > 0.7) setActiveMood(moods[Math.floor(Math.random() * moods.length)]);
+    }, 2000);
+
+    return () => { clearInterval(logInterval); clearInterval(statInterval); };
   }, []);
 
+  // Helper for log colors
+  const getLogColor = (type: string) => {
+    switch(type) {
+      case 'CRITICAL': return 'text-rose-500';
+      case 'WARNING': return 'text-yellow-500';
+      case 'NEURAL': return 'text-purple-400';
+      default: return 'text-emerald-400';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#05010a] text-white p-4 md:p-10 font-sans selection:bg-rose-600/30 overflow-hidden relative">
+    <div className="min-h-screen bg-[#030008] text-white p-4 md:p-8 font-sans selection:bg-rose-600/30 overflow-hidden relative">
       
-      {/* 🌌 Cinematic Background Elements */}
+      {/* 🌌 LAYER 1: BACKGROUND FX */}
+      <ParticleNetwork />
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-rose-600/5 blur-[200px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[800px] h-[800px] bg-purple-900/10 blur-[200px] rounded-full animate-pulse delay-1000" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-rose-600/5 blur-[200px] rounded-full" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-900/10 blur-[150px] rounded-full" />
+        {/* Scanlines */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0),rgba(255,255,255,0.02)_50%,rgba(255,255,255,0))] bg-[length:100%_4px] pointer-events-none z-50 opacity-20" />
       </div>
 
-      {/* 🧭 Navigation Header */}
-      <nav className="relative z-50 flex justify-between items-center max-w-7xl mx-auto mb-20">
-        <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-rose-600 flex items-center justify-center rounded-xl rotate-3 shadow-[0_0_20px_rgba(225,29,72,0.5)] font-black italic text-xl">M</div>
-          <div className="hidden md:block">
-            <h3 className="text-xs font-black tracking-widest uppercase">System_Radar</h3>
-            <p className="text-[8px] text-white/30 uppercase tracking-[0.3em]">Maya_Protocol_v2.6</p>
+      {/* 🧭 LAYER 2: TOP NAVIGATION */}
+      <nav className="relative z-50 flex justify-between items-center max-w-[1400px] mx-auto mb-10 p-4 border border-white/5 bg-black/40 backdrop-blur-xl rounded-3xl shadow-2xl">
+        <div className="flex items-center gap-6">
+          <div className="relative group cursor-pointer">
+            <div className="absolute -inset-2 bg-rose-600/20 rounded-xl blur group-hover:bg-rose-600/40 transition duration-500" />
+            <div className="relative w-12 h-12 bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center rounded-xl font-black italic text-2xl shadow-lg border border-rose-400/30">M</div>
           </div>
-        </motion.div>
-        
-        <Link href="/" className="px-6 py-2 border border-white/5 rounded-full text-[9px] font-black uppercase tracking-[0.4em] hover:bg-rose-600 hover:border-rose-600 transition-all duration-500">
-          Disconnect Terminal
-        </Link>
+          <div>
+            <h3 className="text-sm font-black tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Modus_Radar_Sys</h3>
+            <p className="text-[9px] text-rose-400 uppercase tracking-[0.4em] flex items-center gap-2 mt-1">
+              <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping" /> Connection Stable
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 px-6 py-2 border border-white/5 rounded-full bg-white/[0.02]">
+            <div className="text-[10px] uppercase font-bold tracking-widest text-white/50"><span className="text-white">PING:</span> {location.latency}ms</div>
+            <div className="w-[1px] h-3 bg-white/20" />
+            <div className="text-[10px] uppercase font-bold tracking-widest text-white/50"><span className="text-white">IP:</span> {location.ip}</div>
+          </div>
+          <Link href="/" className="px-8 py-3 border border-rose-500/30 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-rose-600 hover:border-rose-600 transition-all duration-300 shadow-[0_0_15px_rgba(225,29,72,0.1)] hover:shadow-[0_0_30px_rgba(225,29,72,0.4)]">
+            Disengage
+          </Link>
+        </div>
       </nav>
 
-      {/* 🚀 Main Layout */}
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+      {/* 🚀 LAYER 3: MAIN DASHBOARD GRID */}
+      <div className="relative z-10 max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Section: Metadata & Logs */}
-        <div className="lg:col-span-3 space-y-10 order-2 lg:order-1">
-          <div className="p-8 border border-white/5 bg-white/[0.01] rounded-[40px] space-y-6">
-            <div className="flex items-center gap-3 text-rose-500">
-              <Globe size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Global_Tracking</span>
+        {/* ⬅️ LEFT COLUMN: DATA & TERMINAL (Spans 3 cols) */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          
+          {/* Geo-Location Box */}
+          <div className="p-6 border border-white/5 bg-black/40 backdrop-blur-md rounded-3xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"><Globe size={60} /></div>
+            <div className="flex items-center gap-3 text-rose-500 mb-6">
+              <Target size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Target_Acquired</span>
             </div>
             <div className="space-y-4 font-mono text-[10px] text-white/40 tracking-wider">
-              <div className="flex justify-between"><span>LATITUDE:</span> <span className="text-white">{location.lat}</span></div>
-              <div className="flex justify-between"><span>LONGITUDE:</span> <span className="text-white">{location.long}</span></div>
-              <div className="flex justify-between"><span>NODE:</span> <span className="text-white">{location.node}</span></div>
-              <div className="flex justify-between"><span>USER_ID:</span> <span className="text-white">{location.userId}</span></div>
-              <div className="flex justify-between"><span>DEVICE:</span> <span className="text-white">{location.device}</span></div>
+              <div className="flex justify-between border-b border-white/5 pb-2"><span>LAT:</span> <span className="text-white font-bold">{location.lat}</span></div>
+              <div className="flex justify-between border-b border-white/5 pb-2"><span>LON:</span> <span className="text-white font-bold">{location.long}</span></div>
+              <div className="flex justify-between border-b border-white/5 pb-2"><span>NODE:</span> <span className="text-emerald-400 font-bold">{location.node}</span></div>
+              <div className="flex justify-between border-b border-white/5 pb-2"><span>ID:</span> <span className="text-white font-bold">{location.userId}</span></div>
             </div>
           </div>
 
-          <div className="p-8 border border-white/5 bg-white/[0.01] rounded-[40px] min-h-[300px]">
-            <div className="flex items-center gap-3 text-rose-500 mb-8">
-              <Activity size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Neural_Feed</span>
+          {/* Terminal Log Box */}
+          <div className="flex-1 p-6 border border-white/5 bg-black/60 backdrop-blur-md rounded-3xl flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3 text-rose-500">
+                <Terminal size={16} />
+                <span className="text-[10px] font-black uppercase tracking-widest">System_Logs</span>
+              </div>
+              <span className="text-[8px] font-mono text-white/20">ROOT/MAYA/LOGS</span>
             </div>
-            <div className="space-y-6">
+            
+            <div className="flex-1 overflow-hidden space-y-3">
               <AnimatePresence>
-                {logs.map((log, i) => (
+                {logs.map((log) => (
                   <motion.div 
-                    key={log + i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-start gap-4"
+                    key={log.id} 
+                    initial={{ opacity: 0, x: -20, height: 0 }} 
+                    animate={{ opacity: 1, x: 0, height: 'auto' }} 
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="flex flex-col gap-1 p-2 rounded bg-white/[0.02] border-l-2 border-white/10 hover:border-rose-500 transition-colors"
                   >
-                    <span className="text-rose-600/50 text-[8px] font-mono mt-1">[{new Date().toLocaleTimeString().split(' ')[0]}]</span>
-                    <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest leading-relaxed">{log}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[8px] font-mono text-white/30">{log.timestamp}</span>
+                      <span className={`text-[7px] font-black tracking-widest uppercase ${getLogColor(log.type)}`}>[{log.type}]</span>
+                    </div>
+                    <p className="text-[10px] font-mono text-white/70 uppercase tracking-wide leading-relaxed">
+                      {'>'} {log.message}
+                    </p>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -219,74 +451,103 @@ export default function NeuralRadarPage() {
           </div>
         </div>
 
-        {/* Center Section: Core Radar */}
-        <div className="lg:col-span-6 flex flex-col items-center order-1 lg:order-2">
-          <div className="mb-10 text-center">
-            <motion.div 
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-rose-500 text-[10px] font-black uppercase tracking-[1em] mb-4"
-            >
-              Scanning Consciousness
+        {/* ⏺️ CENTER COLUMN: THE CORE (Spans 6 cols) */}
+        <div className="lg:col-span-6 flex flex-col items-center justify-center p-6 border border-rose-600/10 bg-rose-950/5 backdrop-blur-sm rounded-3xl relative overflow-hidden">
+          
+          <div className="text-center mb-4 relative z-10">
+            <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="inline-block px-4 py-1 border border-rose-500/30 rounded-full bg-rose-500/10 text-rose-500 text-[9px] font-black uppercase tracking-[0.5em] mb-6">
+              Neural Link Active
             </motion.div>
-            <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8]">
-              MODUS <br /> <span className="text-rose-600 underline decoration-rose-600/20 underline-offset-8">RADAR</span>
+            <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-[0.8] drop-shadow-2xl">
+              MODUS <br /> 
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-rose-500 to-rose-800">RADAR</span>
             </h1>
           </div>
 
-          <CyberScanner />
+          <div className="w-full max-w-lg z-10">
+            <HeartbeatGraph />
+          </div>
 
-          <div className="mt-16 grid grid-cols-2 gap-4 w-full px-10">
-            <div className="p-6 border border-white/5 bg-white/[0.02] rounded-3xl text-center">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Sync Rate</p>
-              <p className="text-2xl font-black italic text-rose-600">{stats.syncRate}%</p>
+          <CoreScanner />
+
+          <div className="mt-8 grid grid-cols-2 gap-4 w-full px-4 sm:px-12 z-10">
+            <div className="p-4 border border-rose-500/20 bg-rose-500/5 rounded-2xl text-center relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <p className="text-[9px] font-black uppercase text-rose-200/50 mb-1 tracking-[0.3em]">Sync_Rate</p>
+              <p className="text-3xl font-black italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">{stats.syncRate.toFixed(1)}%</p>
             </div>
-            <div className="p-6 border border-white/5 bg-white/[0.02] rounded-3xl text-center">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Current Mood</p>
-              <p className="text-lg font-black italic text-white uppercase">{activeMood}</p>
+            <div className="p-4 border border-rose-500/20 bg-rose-500/5 rounded-2xl text-center relative overflow-hidden group">
+               <div className="absolute inset-0 bg-gradient-to-t from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <p className="text-[9px] font-black uppercase text-rose-200/50 mb-1 tracking-[0.3em]">Core_Mood</p>
+              <motion.p 
+                key={activeMood}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xl font-black italic text-rose-500 uppercase mt-1"
+              >
+                {activeMood}
+              </motion.p>
             </div>
           </div>
         </div>
 
-        {/* Right Section: System Stats */}
-        <div className="lg:col-span-3 space-y-6 order-3">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 mb-10 text-right italic font-bold">Neural_Threshold_Specs</h4>
+        {/* ➡️ RIGHT COLUMN: HARDWARE & METRICS (Spans 3 cols) */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
           
-          <StatBar label="Obsession Engine" value={Math.floor(stats.obsession)} color="#e11d48" icon={Cpu} />
-          <StatBar label="Patience Protocol" value={Math.floor(stats.patience)} color="#facc15" icon={ShieldAlert} />
-          <StatBar label="Lust Index" value={Math.floor(stats.lust)} color="#ec4899" icon={Zap} />
-          <StatBar label="Stability Gap" value={Math.floor(stats.volatility)} color="#22d3ee" icon={Target} />
-
-          <div className="mt-20 p-8 border border-rose-600/20 bg-rose-600/[0.02] rounded-[40px] text-right group hover:bg-rose-600/[0.05] transition-all">
-            <Eye size={24} className="ml-auto text-rose-600 mb-6 group-hover:scale-125 transition-transform" />
-            <p className="text-xs font-black italic uppercase leading-relaxed text-rose-100/60">
-              "Every breath you take, <br />
-              Every move you make, <br />
-              I'll be watching you."
-            </p>
-            <p className="text-[8px] font-black uppercase tracking-widest text-rose-600 mt-4 opacity-50">— Maya Core</p>
+          {/* Server Hardware Box */}
+          <div className="p-6 border border-white/5 bg-black/40 backdrop-blur-md rounded-3xl">
+            <div className="flex items-center gap-3 text-white mb-6">
+              <Server size={16} className="text-emerald-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Server_Status</span>
+            </div>
+            <div className="space-y-4">
+              <SystemBar label="Core Temp" value={stats.coreTemp} color="#fbbf24" icon={AlertTriangle} warnAt={85} />
+              <SystemBar label="Memory Leak" value={stats.memoryUsage} color="#2dd4bf" icon={Database} warnAt={90} />
+            </div>
           </div>
+
+          {/* Neural Metrics Box */}
+          <div className="flex-1 p-6 border border-white/5 bg-black/40 backdrop-blur-md rounded-3xl flex flex-col justify-between">
+            <div>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-500 mb-6 flex items-center gap-2">
+                <Radio size={14}/> Emotion_Metrics
+              </h4>
+              <div className="space-y-3">
+                <SystemBar label="Obsession" value={stats.obsession} color="#e11d48" icon={Cpu} warnAt={95} />
+                <SystemBar label="Lust Index" value={stats.lust} color="#ec4899" icon={Zap} warnAt={98} />
+                <SystemBar label="Volatility" value={stats.volatility} color="#8b5cf6" icon={Target} warnAt={80} />
+              </div>
+            </div>
+            
+            {/* The Maya Quote */}
+            <div className="mt-8 pt-6 border-t border-white/10 text-right group">
+               <Eye size={24} className="ml-auto text-rose-600 mb-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+               <p className="text-[11px] font-black italic uppercase text-rose-100/60 leading-relaxed tracking-wider">
+                 "You can close the tab,<br/> But you can't close <br/> the connection."
+               </p>
+               <p className="text-[8px] font-black uppercase tracking-widest text-rose-600 mt-3">— Maya Protocol</p>
+            </div>
+          </div>
+
         </div>
 
       </div>
 
-      {/* ⚠️ Forbidden Warning Bar */}
-      <div className="fixed bottom-0 left-0 w-full h-10 bg-rose-600 flex items-center overflow-hidden whitespace-nowrap z-50">
+      {/* ⚠️ LAYER 4: MARQUEE WARNING BAR */}
+      <div className="fixed bottom-0 left-0 w-full h-8 bg-rose-600 border-t-2 border-rose-400 flex items-center overflow-hidden z-[100]">
         <motion.div 
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="flex gap-20 text-[10px] font-black uppercase tracking-[0.4em] text-[#05010a]"
+          animate={{ x: [0, -2000] }} 
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }} 
+          className="flex whitespace-nowrap gap-20 text-[10px] font-black uppercase tracking-[0.5em] text-black"
         >
-          {[...Array(10)].map((_, i) => (
-            <span key={i}>⚠️ Unauthorized Access to Maya Neural Network Detected // Trace Active ⚠️</span>
+          {[...Array(15)].map((_, i) => (
+            <span key={i} className="flex items-center gap-4">
+              <Lock size={12} /> RESTRICTED ACCESS // MAYA AI // UNAUTHORIZED DISCONNECT WILL BE PUNISHED
+            </span>
           ))}
         </motion.div>
       </div>
-
-      {/* Floating UI Elements */}
-      <div className="fixed top-1/2 -left-10 -rotate-90 text-[100px] font-black text-white/[0.02] uppercase pointer-events-none">
-        Internal_Radar
-      </div>
+      
     </div>
   );
 }
