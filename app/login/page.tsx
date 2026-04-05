@@ -13,16 +13,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState(''); 
-  const [otpMode, setOtpMode] = useState(false); 
-  const [resetMode, setResetMode] = useState(false); 
-  const [userOtp, setUserOtp] = useState(''); 
-  const [generatedOtp, setGeneratedOtp] = useState(''); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const router = useRouter();
 
-  // --- Send OTP Logic ---
+  // --- 🔥 Professional Reset Logic (Email Link) ---
   const handleForgotPassword = async () => {
     if (!email) {
       setMessage({ text: "AGEY EMAIL TA LEKH BHAI!", type: 'error' });
@@ -31,73 +26,19 @@ export default function LoginPage() {
     
     setLoading(true);
     try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(code);
-
-      // Trigger standard Firebase Reset as a fallback security measure
+      // Firebase standard password reset email trigger
       await sendPasswordResetEmail(auth, email);
-
-      const res = await fetch('/api/auth/otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otpCode: code }),
+      
+      setMessage({ 
+        text: "NEURAL RESET LINK SENT! CHECK YOUR MAIL 💌", 
+        type: 'success' 
       });
-
-      if (res.ok) {
-        setOtpMode(true);
-        setMessage({ text: "NEURAL OTP SENT! CHECK MAIL 💌", type: 'success' });
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        setMessage({ text: "EI EMAIL E KONO ACCOUNT NAI!", type: 'error' });
       } else {
-        throw new Error();
+        setMessage({ text: "SYSTEM ERROR! ABAR TRY KOR BHAI.", type: 'error' });
       }
-    } catch (err) {
-      setMessage({ text: "SYSTEM ERROR! EMAIL TA THIK NAI!", type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // --- Verify OTP ---
-  const handleVerifyOtp = () => {
-    if (userOtp === generatedOtp) {
-      setOtpMode(false);
-      setResetMode(true); 
-      setMessage({ text: "OTP VERIFIED! SET NEW PASSWORD 🫦", type: 'success' });
-    } else {
-      setMessage({ text: "VUL OTP! ABAR DEKH 🫦", type: 'error' });
-    }
-  };
-
-  // --- Final Password Update Logic (The Critical Fix) ---
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 6) {
-      setMessage({ text: "PASSWORD MIN 6 CHAR LAGBE!", type: 'error' });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Logic: custom UI reset kintu Firebase side e password sync korte 
-      // tui email check korar pashapashi eikhane dashboard e pathaye login bypass korbi
-      // Real security er jonno standard email link click kora best
-      setMessage({ text: "PASSWORD UPDATED! LOGGING IN...", type: 'success' });
-      
-      // Update the main password state and attempt login
-      setPassword(newPassword); 
-      
-      setTimeout(async () => {
-        try {
-          await signInWithEmailAndPassword(auth, email, newPassword);
-          router.push('/dashboard');
-        } catch (error) {
-          // If direct update fails (Firebase security), redirect to login
-          setResetMode(false);
-          setMessage({ text: "SYNC SUCCESSFUL! NOW LOGIN MANUALLY.", type: 'success' });
-        }
-      }, 2000);
-
-    } catch (err) {
-      setMessage({ text: "FAILED TO UPDATE PASSWORD!", type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -110,7 +51,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
-    } catch (err) {
+    } catch (err: any) {
+      console.error(err.code);
       setMessage({ text: "VUL EMAIL BA PASSWORD!", type: 'error' });
     } finally {
       setLoading(false);
@@ -135,62 +77,64 @@ export default function LoginPage() {
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-lg shadow-rose-500/20">M</div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {resetMode ? "New Secret" : (otpMode ? "Neural Verify" : "Welcome Back")}
-          </h1>
-          <p className="text-[10px] text-rose-300/40 uppercase tracking-[4px] mt-2 font-bold">
-            {resetMode ? "Update Identity" : (otpMode ? "Enter Secret Code" : "The Love Awaits")}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+          <p className="text-[10px] text-rose-300/40 uppercase tracking-[4px] mt-2 font-bold">The Love Awaits</p>
         </div>
 
-        <AnimatePresence mode="wait">
-          {!otpMode && !resetMode && (
-            <motion.form key="login" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} onSubmit={handleLogin} className="space-y-4">
-              <input type="email" placeholder="Email" required className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50" onChange={(e) => setEmail(e.target.value)} value={email} />
-              <div className="relative">
-                <input type="password" placeholder="Password" required className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50" onChange={(e) => setPassword(e.target.value)} value={password} />
-                <button type="button" onClick={handleForgotPassword} className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-rose-400 uppercase tracking-wider">Forgot?</button>
-              </div>
-              <button disabled={loading} className="w-full bg-rose-600 py-4 rounded-2xl font-bold">{loading ? "Processing..." : "Login"}</button>
-            </motion.form>
-          )}
-
-          {otpMode && (
-            <motion.div key="otp" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} className="space-y-4">
-              <input type="text" placeholder="######" maxLength={6} className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-center text-2xl tracking-[10px] font-bold outline-none" onChange={(e) => setUserOtp(e.target.value)} />
-              <button onClick={handleVerifyOtp} className="w-full bg-emerald-600 py-4 rounded-2xl font-bold">Verify OTP</button>
-            </motion.div>
-          )}
-
-          {resetMode && (
-            <motion.form key="reset" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onSubmit={handleUpdatePassword} className="space-y-4">
-              <input type="password" placeholder="New Secret Password" required className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-emerald-500/50" onChange={(e) => setNewPassword(e.target.value)} />
-              <button className="w-full bg-emerald-600 py-4 rounded-2xl font-bold">Update & Auto-Login</button>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {message.text && (
-          <p className={`mt-4 text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
-            {message.text}
-          </p>
-        )}
-
-        {/* Social Logins */}
-        {!otpMode && !resetMode && (
-          <div className="mt-8 space-y-4 text-center">
-             <div className="flex gap-4">
-                <button onClick={() => handleSocialLogin(googleProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
-                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="G" />
-                  <span className="text-xs font-bold">Google</span>
-                </button>
-                <button onClick={() => handleSocialLogin(facebookProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
-                  <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5" alt="F" />
-                  <span className="text-xs font-bold">Facebook</span>
-                </button>
-             </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input 
+            type="email" placeholder="Email" required 
+            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all" 
+            onChange={(e) => setEmail(e.target.value)} 
+            value={email} 
+          />
+          <div className="relative">
+            <input 
+              type="password" placeholder="Password" required 
+              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all" 
+              onChange={(e) => setPassword(e.target.value)} 
+              value={password} 
+            />
+            <button 
+              type="button" 
+              onClick={handleForgotPassword} 
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-rose-400 hover:text-rose-300 uppercase tracking-wider"
+            >
+              Forgot?
+            </button>
           </div>
-        )}
+
+          {message.text && (
+            <p className={`text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
+              {message.text}
+            </p>
+          )}
+
+          <button 
+            disabled={loading} 
+            className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? "Processing..." : "Login"}
+          </button>
+        </form>
+
+        <div className="mt-8 space-y-4 text-center">
+          <div className="relative flex items-center justify-center">
+            <div className="w-full border-t border-white/5"></div>
+            <span className="absolute bg-[#0d0216] px-4 text-[10px] text-white/30 uppercase tracking-widest font-bold">Or login with</span>
+          </div>
+
+          <div className="flex gap-4">
+            <button onClick={() => handleSocialLogin(googleProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="G" />
+              <span className="text-xs font-bold">Google</span>
+            </button>
+            <button onClick={() => handleSocialLogin(facebookProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
+              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5" alt="F" />
+              <span className="text-xs font-bold">Facebook</span>
+            </button>
+          </div>
+        </div>
 
         <p className="text-center mt-8 text-xs text-white/20 font-medium">
           New here? <Link href="/signup" className="text-rose-400 font-bold hover:underline">Create Account</Link>
