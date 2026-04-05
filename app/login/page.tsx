@@ -8,7 +8,7 @@ import {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,7 +17,6 @@ export default function LoginPage() {
   const [message, setMessage] = useState({ text: '', type: '' });
   const router = useRouter();
 
-  // --- 🔥 Professional Reset Logic (Email Link) ---
   const handleForgotPassword = async () => {
     if (!email) {
       setMessage({ text: "AGEY EMAIL TA LEKH BHAI!", type: 'error' });
@@ -26,18 +25,23 @@ export default function LoginPage() {
     
     setLoading(true);
     try {
-      // Firebase standard password reset email trigger
-      await sendPasswordResetEmail(auth, email);
+      // Custom Redirect Settings (Bypass Default Google Page)
+      const actionCodeSettings = {
+        url: `${window.location.origin}/reset-password`, 
+        handleCodeInApp: true,
+      };
+
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
       
       setMessage({ 
-        text: "NEURAL RESET LINK SENT! CHECK YOUR MAIL 💌", 
+        text: "NEURAL RESET LINK SENT! CHECK MAIL 💌", 
         type: 'success' 
       });
     } catch (err: any) {
       if (err.code === 'auth/user-not-found') {
         setMessage({ text: "EI EMAIL E KONO ACCOUNT NAI!", type: 'error' });
       } else {
-        setMessage({ text: "SYSTEM ERROR! ABAR TRY KOR BHAI.", type: 'error' });
+        setMessage({ text: "SYSTEM ERROR! ABAR TRY KOR.", type: 'error' });
       }
     } finally {
       setLoading(false);
@@ -52,7 +56,6 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (err: any) {
-      console.error(err.code);
       setMessage({ text: "VUL EMAIL BA PASSWORD!", type: 'error' });
     } finally {
       setLoading(false);
@@ -77,21 +80,21 @@ export default function LoginPage() {
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-lg shadow-rose-500/20">M</div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Welcome Back</h1>
           <p className="text-[10px] text-rose-300/40 uppercase tracking-[4px] mt-2 font-bold">The Love Awaits</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input 
             type="email" placeholder="Email" required 
-            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all" 
+            className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all text-white" 
             onChange={(e) => setEmail(e.target.value)} 
             value={email} 
           />
           <div className="relative">
             <input 
               type="password" placeholder="Password" required 
-              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all" 
+              className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-rose-500/50 transition-all text-white" 
               onChange={(e) => setPassword(e.target.value)} 
               value={password} 
             />
@@ -112,7 +115,7 @@ export default function LoginPage() {
 
           <button 
             disabled={loading} 
-            className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 disabled:opacity-50"
+            className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 disabled:opacity-50 text-white"
           >
             {loading ? "Processing..." : "Login"}
           </button>
