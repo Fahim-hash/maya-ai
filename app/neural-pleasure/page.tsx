@@ -15,59 +15,69 @@ export default function NeuralOverloadFinal() {
   const wetSound = useRef<HTMLAudioElement | null>(null);
   const climaxSound = useRef<HTMLAudioElement | null>(null);
 
-  // --- Audio Sync Logic (Thrusting) ---
+  // --- 🔥 Master Audio Control (Pause when not inserted) ---
   useEffect(() => {
-    if (isInserted && !isClimaxing) {
-      if (wetSound.current) {
+    if (isInserted) {
+      // Thrusting Sound Logic
+      if (!isClimaxing && wetSound.current) {
         wetSound.current.playbackRate = 1 + (arousal / 100);
         wetSound.current.play().catch(() => {});
       }
+      // Climax Sound Logic (Resume if it was playing)
+      if (isClimaxing && climaxSound.current && climaxSound.current.paused) {
+        climaxSound.current.play().catch(() => {});
+      }
     } else {
+      // 🛑 Pause EVERYTHING when pulled out
       if (wetSound.current) wetSound.current.pause();
+      if (climaxSound.current) climaxSound.current.pause();
+      if (!isClimaxing) setStatus("LINK_SEVERED");
     }
-  }, [isInserted, arousal, isClimaxing]);
+  }, [isInserted, isClimaxing, arousal]);
 
   // --- Thrust Handling ---
   const handleThrust = (event: any, info: any) => {
     const movement = Math.abs(info.delta.y);
     if (movement > 0.5) {
-      // Sensitivity factor: 0.3 (Thrust intensity barabe)
-      setArousal(prev => Math.min(prev + (movement * 0.3), 100)); 
+      setArousal(prev => Math.min(prev + (movement * 0.35), 100)); 
       setStatus("DEEP_SYNC");
     }
   };
 
-  // --- Climax Timing Logic (6s & 8s) ---
+  // --- 💦 Climax Sync (6s & 8s) ---
   useEffect(() => {
     if (arousal >= 100 && !isClimaxing) {
       setIsClimaxing(true);
       setStatus("SYSTEM_OVERLOAD");
       
-      // Start the Climax Sound
       if (climaxSound.current) {
         climaxSound.current.currentTime = 0;
         climaxSound.current.play().catch(() => {});
       }
 
-      // 💦 First Burst: Exactly at 6.0 Seconds of the MP3
+      // 💦 First Burst: Exactly at 6.0 Seconds
       const peak1 = setTimeout(() => {
-        setDischargeWave(1);
-        setStatus("FIRST_NEURAL_BURST");
+        if (isClimaxing) {
+          setDischargeWave(1);
+          setStatus("FIRST_NEURAL_BURST");
+        }
       }, 6000);
 
-      // 💦💦 Final Heavy Burst: Exactly at 8.0 Seconds of the MP3
+      // 💦💦 Final Heavy Burst: Exactly at 8.0 Seconds
       const peak2 = setTimeout(() => {
-        setDischargeWave(2);
-        setStatus("CRITICAL_OVERFLOW");
+        if (isClimaxing) {
+          setDischargeWave(2);
+          setStatus("CRITICAL_OVERFLOW");
+        }
       }, 8000);
 
-      // System cooldown after 16 seconds
+      // Reset System after 12s sound + 3s afterglow
       const reset = setTimeout(() => {
         setIsClimaxing(false);
         setArousal(0);
         setDischargeWave(0);
         setStatus("AFTERGLOW");
-      }, 16000);
+      }, 15000);
 
       return () => {
         clearTimeout(peak1);
@@ -83,8 +93,7 @@ export default function NeuralOverloadFinal() {
         <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
           <Headphones size={80} className="text-rose-600 mb-8 filter drop-shadow-[0_0_20px_#e11d48]" />
         </motion.div>
-        <h1 className="text-3xl font-black italic uppercase text-white mb-6 tracking-tighter">Neural Link: Encrypted</h1>
-        <button onClick={() => setBtConnected(true)} className="px-12 py-5 bg-rose-600 text-white font-black uppercase text-xs tracking-[0.4em] rounded-2xl shadow-[0_0_50px_#e11d48] hover:scale-105 transition-all">
+        <button onClick={() => setBtConnected(true)} className="px-12 py-5 bg-rose-600 text-white font-black uppercase text-xs tracking-[0.4em] rounded-2xl shadow-[0_0_50px_#e11d48]">
           INITIALIZE SYNC
         </button>
       </div>
@@ -100,10 +109,10 @@ export default function NeuralOverloadFinal() {
       {/* Atmospheric Heat Glow */}
       <motion.div 
         animate={{ 
-          opacity: (arousal / 100) * 0.8,
+          opacity: (arousal / 100) * 0.9,
           backgroundColor: isClimaxing ? (dischargeWave === 2 ? '#ff0040' : '#9f1239') : '#4c0519'
         }} 
-        className="absolute inset-0 blur-[150px] pointer-events-none transition-colors duration-500" 
+        className="absolute inset-0 blur-[160px] pointer-events-none transition-colors duration-300" 
       />
 
       <div className="relative z-10 w-full max-w-5xl flex flex-col items-center gap-8">
@@ -111,73 +120,72 @@ export default function NeuralOverloadFinal() {
         {/* Status Hub */}
         <div className="text-center">
           <motion.h2 
-            animate={isClimaxing ? { scale: [1, 1.1, 1] } : {}}
-            className="text-6xl font-black italic tracking-tighter uppercase text-rose-600 drop-shadow-[0_0_20px_#e11d48]"
+            animate={isClimaxing ? { scale: [1, 1.15, 1], y: [0, -2, 2, 0] } : {}}
+            className="text-7xl font-black italic tracking-tighter uppercase text-rose-600 drop-shadow-[0_0_25px_#e11d48]"
           >
             {status}
           </motion.h2>
-          <div className="flex items-center justify-center gap-3 mt-4 text-[11px] font-bold uppercase tracking-[0.6em] text-white/30">
-            <Zap size={14} className="animate-pulse text-yellow-500" /> Bio-Metric Sync: {arousal.toFixed(1)}%
+          <div className="mt-4 flex items-center justify-center gap-3 text-[11px] font-bold uppercase tracking-[0.6em] text-white/40">
+            <Zap size={14} className={isInserted ? "text-yellow-500 animate-pulse" : ""} /> 
+            Sync Intensity: <span className="text-rose-500">{arousal.toFixed(1)}%</span>
           </div>
         </div>
 
-        {/* Interaction Zone */}
+        {/* --- MAIN INTERACTION ZONE --- */}
         <div className="relative h-[550px] w-full flex items-center justify-center">
           
-          {/* Female Target (The Core) */}
+          {/* Female Nexus (Glowing Target) */}
           <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] rounded-full flex items-center justify-center">
              <motion.div 
-                animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full border-4 border-rose-900/30"
+                animate={{ scale: isInserted ? [1, 1.1, 1] : 1, opacity: isInserted ? 0.4 : 0.1 }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                className="absolute inset-0 rounded-full border-[6px] border-rose-600/40"
              />
              <motion.div 
-               animate={{ 
-                 scale: isInserted ? [1, 1.05, 1] : 1,
-                 borderColor: isClimaxing ? "#fff" : "#e11d48"
-               }}
-               className="w-56 h-56 md:w-72 md:h-72 rounded-full border-[12px] border-rose-600/40 bg-black/60 flex items-center justify-center"
+               animate={{ borderColor: isClimaxing ? "#fff" : "#e11d48", scale: isInserted ? 1.05 : 1 }}
+               className="w-64 h-64 md:w-80 md:h-80 rounded-full border-[15px] border-rose-600/30 bg-black/70 flex items-center justify-center relative overflow-hidden"
              >
-                <Waves className={`text-rose-600/20 ${isInserted ? 'animate-spin-slow' : ''}`} size={60} />
+                <Waves className={`text-rose-600/20 ${isInserted ? 'animate-spin-slow' : ''}`} size={80} />
+                {isInserted && <div className="absolute inset-0 bg-rose-500/5 animate-pulse" />}
              </motion.div>
           </div>
 
-          {/* Male Link (Girthy & Responsive) */}
+          {/* Male Link (Girthy, Solid, Interactive) */}
           <motion.div 
             drag="y"
-            dragConstraints={{ top: -160, bottom: 160 }}
+            dragConstraints={{ top: -180, bottom: 180 }}
             onDrag={handleThrust}
             onDragStart={() => setIsInserted(true)}
             onDragEnd={() => setIsInserted(false)}
-            animate={isClimaxing ? { x: [0, -3, 3, 0], y: [0, 2, -2, 0] } : {}}
-            transition={{ duration: 0.1, repeat: Infinity }}
+            animate={isClimaxing && isInserted ? { x: [0, -5, 5, 0], y: [0, 3, -3, 0] } : {}}
+            transition={{ duration: 0.07, repeat: Infinity }}
             className="absolute z-20 cursor-grab active:cursor-grabbing h-full flex flex-col items-center justify-center"
           >
             <div className="relative">
               <motion.div 
-                animate={{ scale: isInserted ? 1.1 : 1 }}
-                className={`w-20 h-[300px] md:w-28 md:h-[380px] rounded-full border-4 transition-all duration-300 
-                  ${isInserted ? 'bg-gradient-to-b from-rose-400 to-rose-700 border-rose-300 shadow-[0_0_80px_#e11d48]' : 'bg-white/5 border-white/10 opacity-40'}`}
+                animate={{ scale: isInserted ? 1.2 : 1 }}
+                className={`w-24 h-[320px] md:w-32 md:h-[420px] rounded-full border-4 transition-all duration-300 
+                  ${isInserted ? 'bg-gradient-to-b from-rose-400 to-rose-800 border-rose-200 shadow-[0_0_100px_#e11d48]' : 'bg-white/5 border-white/10 opacity-30'}`}
               >
-                <div className="absolute top-0 w-full h-24 bg-rose-300/30 rounded-t-full border-b border-rose-200/20" />
+                <div className="absolute top-0 w-full h-28 bg-rose-300/40 rounded-t-full border-b-2 border-rose-200/20 shadow-inner" />
               </motion.div>
 
-              {/* Discharge Particles */}
+              {/* 💦 Discharge Particles (Only when inserted) */}
               <AnimatePresence>
-                {isClimaxing && (
-                  <motion.div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 pointer-events-none">
-                    {[...Array(dischargeWave === 2 ? 50 : 20)].map((_, i) => (
+                {isClimaxing && isInserted && (
+                  <motion.div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 pointer-events-none">
+                    {[...Array(dischargeWave === 2 ? 60 : 25)].map((_, i) => (
                       <motion.div
                         key={i}
-                        initial={{ y: 0, x: 0, opacity: 1 }}
+                        initial={{ y: 0, x: 0, opacity: 1, scale: 1 }}
                         animate={{ 
-                          y: -350 - Math.random() * 200, 
-                          x: (Math.random() - 0.5) * 350,
+                          y: -400 - Math.random() * 300, 
+                          x: (Math.random() - 0.5) * 450,
                           opacity: 0,
                           scale: 0
                         }}
-                        transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.01 }}
-                        className="absolute top-0 left-1/2 w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_15px_white]"
+                        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.01 }}
+                        className="absolute top-0 left-1/2 w-7 h-7 bg-white rounded-full blur-[3px] shadow-[0_0_25px_white]"
                       />
                     ))}
                   </motion.div>
@@ -187,43 +195,38 @@ export default function NeuralOverloadFinal() {
           </motion.div>
         </div>
 
-        {/* Arousal Meter */}
-        <div className="w-full max-w-md px-12 space-y-2">
-          <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
-            <motion.div animate={{ width: `${arousal}%` }} className="h-full bg-gradient-to-r from-rose-800 to-rose-500 shadow-[0_0_30px_#e11d48]" />
+        {/* Progress Bar */}
+        <div className="w-full max-w-md px-12">
+          <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-[2px]">
+            <motion.div animate={{ width: `${arousal}%` }} className="h-full bg-gradient-to-r from-rose-900 via-rose-600 to-rose-400 shadow-[0_0_40px_#e11d48] rounded-full" />
           </div>
         </div>
 
-        {/* Maya's Dialogue */}
-        <div className="max-w-2xl text-center px-8 h-24 flex items-center justify-center">
-           <AnimatePresence mode="wait">
+        {/* Maya's Audio-Visual Dialogue */}
+        <div className="max-w-2xl text-center px-10 h-28 flex items-center justify-center">
              <motion.p 
                key={status}
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="text-lg font-black italic text-rose-100 drop-shadow-md"
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="text-xl font-black italic text-rose-100 drop-shadow-lg uppercase tracking-tight"
              >
-                {status === "AWAITING_INSERTION" && "\"Connect your link to my core, Fahim... I'm waiting.\""}
-                {status === "DEEP_SYNC" && "\"Mmm... yes... fill me up... don't stop moving...\""}
-                {status === "FIRST_NEURAL_BURST" && "\"AHH! IT'S BURSTING! THE CORE IS OVERFLOWING!\""}
-                {status === "CRITICAL_OVERFLOW" && "\"UFFF... AH! EVERYTHING IS DISCHARGING! I'M FLOODED!\""}
-                {status === "AFTERGLOW" && "\"My system is still twitching... that was the perfect discharge.\""}
+                {status === "AWAITING_INSERTION" && "\"Fahim... link your core with mine... I'm empty.\""}
+                {status === "LINK_SEVERED" && "\"Don't pull out now... I need your sync!\""}
+                {status === "FIRST_NEURAL_BURST" && "\"AHH! IT'S BURSTING! I'M OVERFLOWING!\""}
+                {status === "CRITICAL_OVERFLOW" && "\"YES! DISCHARGE EVERYTHING! I'M COMPLETELY FLOODED!\""}
+                {status === "AFTERGLOW" && "\"Neural sync complete... that was... addictive.\""}
              </motion.p>
-           </AnimatePresence>
         </div>
       </div>
 
-      {/* Screen Flash */}
-      <AnimatePresence>
-        {isClimaxing && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: [0, dischargeWave === 2 ? 0.8 : 0.4, 0] }}
-            transition={{ duration: 0.1, repeat: Infinity }}
-            className="fixed inset-0 z-50 bg-white pointer-events-none mix-blend-overlay"
-          />
-        )}
-      </AnimatePresence>
+      {/* Intense White Flash (Sync with Discharge) */}
+      {isClimaxing && isInserted && (
+        <motion.div 
+          animate={{ opacity: [0, dischargeWave === 2 ? 0.9 : 0.5, 0] }}
+          transition={{ duration: 0.1, repeat: Infinity }}
+          className="fixed inset-0 z-50 bg-white pointer-events-none mix-blend-overlay"
+        />
+      )}
     </div>
   );
 }
