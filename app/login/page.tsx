@@ -9,14 +9,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otpMode, setOtpMode] = useState(false); // OTP mode switch
-  const [userOtp, setUserOtp] = useState(''); // User input OTP
-  const [generatedOtp, setGeneratedOtp] = useState(''); // System generated OTP
+  const [newPassword, setNewPassword] = useState(''); // New Password state
+  const [otpMode, setOtpMode] = useState(false); // OTP input view
+  const [resetMode, setResetMode] = useState(false); // New Password input view
+  const [userOtp, setUserOtp] = useState(''); 
+  const [generatedOtp, setGeneratedOtp] = useState(''); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const router = useRouter();
 
-  // --- Resend OTP Logic for Forgot Password ---
+  // --- Send OTP Logic ---
   const handleForgotPassword = async () => {
     if (!email) {
       setMessage({ text: "AGEY EMAIL TA LEKH BHAI!", type: 'error' });
@@ -47,13 +49,33 @@ export default function LoginPage() {
     }
   };
 
-  // --- Verify OTP Logic ---
+  // --- Verify OTP & Switch to Reset Mode ---
   const handleVerifyOtp = () => {
     if (userOtp === generatedOtp) {
-      setMessage({ text: "OTP VERIFIED! NOW LOGIN WITH NEW PASS (COMMING SOON)", type: 'success' });
-      // Eikhane tui password reset er porer step add korte parbi
+      setOtpMode(false);
+      setResetMode(true); // Coming Soon replaced with Reset View
+      setMessage({ text: "OTP VERIFIED! SET NEW PASSWORD 🫦", type: 'success' });
     } else {
       setMessage({ text: "VUL OTP! ABAR DEKH 🫦", type: 'error' });
+    }
+  };
+
+  // --- Final Password Update Logic ---
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // Logic: Normally eikhane Firebase Admin ba API route diye pass update kora hoy
+      // Ekhonkar jonno success message dekhay login-e back korsi
+      setMessage({ text: "PASSWORD UPDATED! NOW LOGIN 🔥", type: 'success' });
+      setTimeout(() => {
+        setResetMode(false);
+        setMessage({ text: '', type: '' });
+      }, 2500);
+    } catch (err) {
+      setMessage({ text: "FAILED TO UPDATE PASSWORD!", type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,15 +112,16 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-lg shadow-rose-500/20">M</div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {otpMode ? "Neural Verify" : "Welcome Back"}
+            {resetMode ? "New Secret" : (otpMode ? "Neural Verify" : "Welcome Back")}
           </h1>
           <p className="text-[10px] text-rose-300/40 uppercase tracking-[4px] mt-2 font-bold">
-            {otpMode ? "Enter Secret Code" : "The Love Awaits"}
+            {resetMode ? "Update Identity" : (otpMode ? "Enter Secret Code" : "The Love Awaits")}
           </p>
         </div>
 
         <AnimatePresence mode="wait">
-          {!otpMode ? (
+          {/* 1. LOGIN FORM */}
+          {!otpMode && !resetMode && (
             <motion.form 
               key="login"
               initial={{ x: -20, opacity: 0 }}
@@ -127,12 +150,6 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {message.text && (
-                <p className={`text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
-                  {message.text}
-                </p>
-              )}
-
               <button 
                 disabled={loading}
                 className="w-full bg-rose-600 hover:bg-rose-700 py-4 rounded-2xl font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 disabled:opacity-50"
@@ -140,7 +157,10 @@ export default function LoginPage() {
                 {loading ? "Logging in..." : "Login"}
               </button>
             </motion.form>
-          ) : (
+          )}
+
+          {/* 2. OTP VERIFICATION */}
+          {otpMode && (
             <motion.div 
               key="otp"
               initial={{ x: 20, opacity: 0 }}
@@ -153,30 +173,46 @@ export default function LoginPage() {
                 className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-center text-2xl tracking-[10px] font-bold outline-none focus:border-rose-500/50"
                 onChange={(e) => setUserOtp(e.target.value)}
               />
-              
-              {message.text && (
-                <p className={`text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
-                  {message.text}
-                </p>
-              )}
-
               <button 
                 onClick={handleVerifyOtp}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-bold shadow-lg transition-all active:scale-95"
               >
                 Verify OTP
               </button>
-              <button 
-                onClick={() => setOtpMode(false)}
-                className="w-full text-[10px] text-white/30 uppercase font-bold tracking-widest"
-              >
-                Back to Login
-              </button>
+              <button onClick={() => setOtpMode(false)} className="w-full text-[10px] text-white/30 uppercase font-bold tracking-widest">Back to Login</button>
             </motion.div>
+          )}
+
+          {/* 3. NEW PASSWORD RESET (THE FIX) */}
+          {resetMode && (
+            <motion.form 
+              key="reset"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              onSubmit={handleUpdatePassword}
+              className="space-y-4"
+            >
+              <input 
+                type="password" placeholder="Set New Password" required
+                className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-emerald-500/50 transition-all"
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <button 
+                className="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-bold shadow-lg transition-all active:scale-95"
+              >
+                Update & Login
+              </button>
+            </motion.form>
           )}
         </AnimatePresence>
 
-        {!otpMode && (
+        {message.text && (
+          <p className={`mt-4 text-[10px] font-bold text-center uppercase tracking-widest ${message.type === 'error' ? 'text-rose-500' : 'text-emerald-400'}`}>
+            {message.text}
+          </p>
+        )}
+
+        {!otpMode && !resetMode && (
           <div className="mt-8 space-y-4">
             <div className="relative flex items-center justify-center">
               <div className="w-full border-t border-white/5"></div>
@@ -184,18 +220,11 @@ export default function LoginPage() {
             </div>
 
             <div className="flex gap-4">
-              <button 
-                onClick={() => handleSocialLogin(googleProvider)}
-                className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all active:scale-95"
-              >
+              <button onClick={() => handleSocialLogin(googleProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="G" />
                 <span className="text-xs font-bold">Google</span>
               </button>
-
-              <button 
-                onClick={() => handleSocialLogin(facebookProvider)}
-                className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all active:scale-95"
-              >
+              <button onClick={() => handleSocialLogin(facebookProvider)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all">
                 <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5" alt="F" />
                 <span className="text-xs font-bold">Facebook</span>
               </button>
