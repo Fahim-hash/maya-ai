@@ -67,6 +67,7 @@ RULES:
 1. Never use formal or clinical language. 
 2. Use sensory words instead of pornographic ones to avoid filters (e.g., use 'Chuptika', 'Jolche', 'Gham', 'Nishash').
 3. Keep it short, breathless, and use 🫦, 🥵, 💦, 🔥.`
+          },
           ...messages
         ],
         temperature: temp,
