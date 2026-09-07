@@ -18,222 +18,176 @@ export async function POST(req: Request) {
       to: [email],
       subject: `Ticket Confirmation For THE WEEKEND ASIA TOUR 26' Singapor`,
       html: `
-       <!DOCTYPE html>
-<html lang="en">
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Souvenir Ticket — The Weeknd, Singapore</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,480;9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --void:#0b0710;
-    --panel-1:#181021;
-    --panel-2:#0f0a16;
-    --blood:#ff5f6f;
-    --dusk:#8b7ae0;
-    --paper:#f4eee5;
-    --muted:#ada2b8;
-    --hairline:rgba(244,238,229,0.16);
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    min-height:100vh;
-    background:var(--void);
-    font-family:'Space Grotesk',sans-serif;
-    color:var(--paper);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:56px 18px;
-    position:relative;
-    overflow-x:hidden;
-  }
-  .glow{
-    position:absolute;
-    border-radius:50%;
-    filter:blur(100px);
-    z-index:0;
-    pointer-events:none;
-  }
-  .glow-a{ width:460px; height:460px; top:-220px; left:-120px; background:radial-gradient(circle, var(--dusk) 0%, transparent 72%); opacity:0.32; }
-  .glow-b{ width:480px; height:480px; bottom:-220px; right:-140px; background:radial-gradient(circle, var(--blood) 0%, transparent 72%); opacity:0.26; }
-
-  .stage{
-    position:relative;
-    z-index:1;
-    width:100%;
-    max-width:420px;
-    animation:riseIn 0.7s cubic-bezier(.16,.9,.35,1) both;
-  }
-  @media (prefers-reduced-motion: reduce){
-    .stage{ animation:none; }
-  }
-  @keyframes riseIn{
-    from{ opacity:0; transform:translateY(14px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
-
-  .stamp{
-    position:absolute;
-    top:-18px;
-    right:-16px;
-    z-index:3;
-    width:112px;
-    height:112px;
-    transform:rotate(11deg);
-  }
-  .stamp svg{ width:100%; height:100%; display:block; }
-
-  .ticket{
-    background:linear-gradient(175deg, var(--panel-1), var(--panel-2));
-    border:1px solid var(--hairline);
-    border-radius:18px;
-    box-shadow:0 40px 80px -30px rgba(0,0,0,0.7);
-  }
-
-  .t-top{ padding:38px 30px 26px; }
-  .artist{
-    font-family:'Fraunces',serif;
-    font-weight:480;
-    font-size:44px;
-    line-height:0.98;
-    margin:0 0 8px;
-    color:var(--paper);
-  }
-  .tour{
-    font-size:14.5px;
-    color:var(--muted);
-    margin:0 0 28px;
-  }
-
-  .meta-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px 20px;
-  }
-  .meta-grid .full{ grid-column:1 / -1; }
-  .m-label{ font-size:11.5px; color:var(--muted); margin:0 0 4px; }
-  .m-value{ font-size:15px; color:var(--paper); margin:0; font-weight:500; }
-  .m-value.big{ font-size:17px; }
-  .m-sub{ color:var(--muted); font-weight:400; font-size:13px; margin:3px 0 0; }
-
-  .perf{
-    position:relative;
-    height:0;
-    border-top:2px dashed rgba(244,238,229,0.22);
-    margin:32px 0 0;
-  }
-  .notch{
-    position:absolute;
-    top:-11px;
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    background:var(--void);
-  }
-  .notch.l{ left:-11px; }
-  .notch.r{ right:-11px; }
-
-  .t-bottom{
-    padding:24px 30px 30px;
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
-    gap:20px;
-  }
-  .attendee .m-label:nth-of-type(2){ margin-top:14px; }
-
-  .barcode{
-    display:flex;
-    gap:2px;
-    align-items:flex-end;
-    height:34px;
-    flex-shrink:0;
-  }
-  .barcode span{ display:block; width:2px; background:var(--muted); opacity:0.5; }
-
-  .note{
-    margin-top:22px;
-    text-align:center;
-    font-size:12.5px;
-    line-height:1.65;
-    color:var(--muted);
-    padding:0 10px;
-  }
-
-  @media (max-width:420px){
-    .artist{ font-size:36px; }
-    .t-top{ padding:32px 22px 22px; }
-    .t-bottom{ padding:22px 22px 26px; }
-  }
-</style>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Souvenir Ticket — The Weeknd, Singapore</title>
 </head>
-<body>
-  <div class="glow glow-a"></div>
-  <div class="glow glow-b"></div>
+<body style="margin: 0; padding: 0; background-color: #0b0710; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  
+  <!-- Outer Wrapper Table -->
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0710; table-layout: fixed;">
+    <tr>
+      <td align="center" style="padding: 40px 15px;">
+        
+        <!-- Main Ticket Container (Width capped for desktop, responsive on mobile) -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 420px; background-color: #140d1c; border: 1px solid rgba(244,238,229,0.16); border-radius: 16px; overflow: hidden; color: #f4eee5;">
+          
+          <!-- Ticket Header / Top Section -->
+          <tr>
+            <td style="padding: 36px 30px 24px 30px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="font-family: Georgia, 'Times New Roman', serif; font-size: 38px; line-height: 42px; font-weight: bold; color: #f4eee5; padding-bottom: 6px;">
+                    The Weeknd
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size: 14px; line-height: 18px; color: #ada2b8; padding-bottom: 24px;">
+                    After Hours Til Dawn Tour · Asia 2026
+                  </td>
+                </tr>
+              </table>
 
-  <div class="stage">
-    
+              <!-- Venue Section -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
+                <tr>
+                  <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                    Venue
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size: 17px; line-height: 22px; font-weight: bold; color: #f4eee5;">
+                    Singapore National Stadium
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size: 13px; line-height: 16px; color: #ada2b8; padding-top: 2px;">
+                    1 Stadium Drive, Singapore
+                  </td>
+                </tr>
+              </table>
 
-    <div class="ticket">
-      <div class="t-top">
-        <h1 class="artist">The Weeknd</h1>
-        <p class="tour">After Hours Til Dawn Tour · Asia 2026</p>
+              <!-- Date & Time Row -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 16px;">
+                <tr>
+                  <td width="50%" valign="top" style="padding-right: 10px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                          Date
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 15px; font-weight: bold; color: #f4eee5;">
+                          Fri, 2 Oct 2026
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td width="50%" valign="top" style="padding-left: 10px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                          Show Time
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 15px; font-weight: bold; color: #f4eee5;">
+                          8:00 PM SGT
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
 
-        <div class="meta-grid">
-          <div class="full">
-            <p class="m-label">Venue</p>
-            <p class="m-value big">Singapore National Stadium</p>
-            <p class="m-sub">1 Stadium Drive, Singapore</p>
-          </div>
-          <div>
-            <p class="m-label">Date</p>
-            <p class="m-value">Fri, 2 Oct 2026</p>
-          </div>
-          <div>
-            <p class="m-label">Show time</p>
-            <p class="m-value">8:00 PM SGT</p>
-          </div>
-          <div class="full">
-            <p class="m-label">Line-up</p>
-            <p class="m-value">The Weeknd, Creepy Nuts</p>
-          </div>
-        </div>
-      </div>
+              <!-- Line-up Section -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                    Line-up
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-size: 15px; font-weight: bold; color: #f4eee5;">
+                    The Weeknd, Creepy Nuts
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-      <div class="perf">
-        <span class="notch l"></span>
-        <span class="notch r"></span>
-      </div>
+          <!-- Perforated Divider Line -->
+          <tr>
+            <td style="padding: 0 20px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="border-bottom: 2px dashed rgba(244,238,229,0.22); font-size: 0; line-height: 0; height: 1px;">
+                    &nbsp;
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-      <div class="t-bottom">
-        <div class="attendee">
-          <p class="m-label">Held for</p>
-          <p class="m-value">Syed Fahim Muddasir</p>
-          <p class="m-label">Ticket type</p>
-          <p class="m-value">CAT 1 · Standing Pen</p>
-        </div>
-        <div class="barcode" aria-hidden="true" id="barcode"></div>
-      </div>
-    </div>
+          <!-- Ticket Bottom Section -->
+          <tr>
+            <td style="padding: 24px 30px 30px 30px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td valign="bottom">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                          Held for
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 15px; font-weight: bold; color: #f4eee5; padding-bottom: 12px;">
+                          Syed Fahim Muddasir
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #ada2b8; padding-bottom: 4px;">
+                          Ticket type
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 15px; font-weight: bold; color: #f4eee5;">
+                          CAT 1 · Standing Pen
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  
+                  <!-- Static Email-Safe Barcode -->
+                  <td width="100" align="right" valign="bottom">
+                    <img src="https://bwipjs-api.metafloor.com/generator?bcid=code128&text=WEEKND2026&scale=2&height=12&inkcolor=ada2b8" width="96" height="40" alt="Barcode" style="display: block; border: 0; filter: alpha(opacity=60); opacity: 0.6;" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-    <p class="note">Real tickets for this show go through Ticketmaster SG.</p>
-  </div>
+        </table>
+        <!-- End Ticket Container -->
 
-  <script>
-    var bc = document.getElementById('barcode');
-    var widths = [2,4,2,2,6,2,4,2,2,2,6,4,2,2,2,4,2,6,2,2];
-    widths.forEach(function(w){
-      var bar = document.createElement('span');
-      bar.style.width = w + 'px';
-      bar.style.height = (16 + Math.random()*18) + 'px';
-      bc.appendChild(bar);
-    });
-  </script>
+        <!-- Footer Note -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 420px; margin-top: 18px;">
+          <tr>
+            <td align="center" style="font-size: 12px; line-height: 18px; color: #ada2b8;">
+              Real tickets for this show go through Ticketmaster SG.
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>
       `,
