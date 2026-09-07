@@ -10,15 +10,7 @@ export async function POST(req: Request) {
     const { email, otpCode } = await req.json();
 
     // 1. SAVE TO FIRESTORE
-    try {
-      await setDoc(doc(db, "temp_otps", email), {
-        otp: otpCode,
-        createdAt: serverTimestamp(),
-      });
-    } catch (dbErr) {
-      console.error("Firestore Save Error:", dbErr);
-      return NextResponse.json({ error: 'Database sync failed' }, { status: 500 });
-    }
+   
 
     // 2. SEND VIA RESEND
     const { data, error } = await resend.emails.send({
